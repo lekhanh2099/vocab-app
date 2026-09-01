@@ -332,7 +332,7 @@ export default function Falling() {
               <div class="grid lg:grid-cols-[1.05fr_0.95fr]">
                 <div class="border-b border-slate-200 p-4 sm:p-5 lg:border-b-0 lg:border-r">
                   <div class="flex items-start gap-4">
-                    <img src="/mascot/panda-ranger.svg" alt="Panda Dojo" class="size-12 shrink-0 object-contain sm:size-14"/>
+                    <img src="/mascot/panda-ranger.png" alt="Panda Dojo" class="size-12 shrink-0 object-contain sm:size-14"/>
                     <div><div class="text-xs font-extrabold uppercase tracking-[0.12em] text-blue-700">Panda Dojo</div><h2 class="mt-1 text-xl font-black tracking-tight text-slate-900 sm:text-2xl">Chọn trận luyện</h2><p class="mt-1.5 max-w-xl text-xs leading-5 text-slate-500">Gõ đúng pinyin để gấu phóng phi tiêu vào chữ; đáp án đúng được đọc lại để củng cố âm. Combo càng dài, vật phẩm càng sớm xuất hiện.</p></div>
                   </div>
 
@@ -363,7 +363,7 @@ export default function Falling() {
           </Show>
 
           <Show when={phase() === "playing"}>
-            <section class="mx-auto flex w-full max-w-[72rem] flex-col gap-2.5">
+            <section class="mx-auto flex w-full max-w-none flex-col gap-2.5">
               <div class="relative h-[clamp(19rem,43dvh,29rem)] overflow-hidden rounded-[1.25rem] border border-slate-900/10 bg-slate-950 shadow-[0_1rem_2.5rem_rgba(15,23,42,0.18)] touch-capable:h-[clamp(23rem,50dvh,33rem)] fine-pointer:h-[clamp(24rem,52dvh,34rem)] landscape:touch-capable:h-[clamp(18rem,55dvh,26rem)]">
                 <div class="h-full w-full overflow-hidden [&>canvas]:block [&>canvas]:h-full [&>canvas]:w-full [&>canvas]:touch-none" ref={mount}/>
 

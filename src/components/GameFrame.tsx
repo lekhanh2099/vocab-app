@@ -34,10 +34,10 @@ export function GameFrame(props: GameFrameProps) {
   });
 
   return (
-    <div class={`game-page mx-auto flex min-h-dvh w-full flex-col gap-4 px-3 pb-[calc(1rem_+_env(safe-area-inset-bottom))] sm:px-4 lg:px-6 ${props.compact ? "max-w-5xl" : "max-w-[72rem]"}`}>
+    <div class={`game-page mx-auto flex min-h-dvh w-full flex-col gap-4 px-3 pb-[calc(1rem_+_env(safe-area-inset-bottom))] sm:px-4 lg:px-6 ${props.compact ? "max-w-5xl" : "max-w-none"}`}>
       <header class="sticky top-0 z-30 grid min-h-14 grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 border-b border-slate-200/80 bg-[#f7f7f5]/95 pb-2 pt-[calc(0.5rem_+_env(safe-area-inset-top))] backdrop-blur-xl sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-3">
         <A href="/games" class="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 text-sm font-bold text-slate-800 no-underline shadow-sm transition hover:border-slate-300 hover:shadow sm:px-3" aria-label="Quay lại danh sách game">
-          <ArrowLeft size={18} strokeWidth={2.4}/><span class="hidden sm:inline">Game</span><kbd class={`${kbdClass} hidden lg:inline-flex`}>Esc</kbd>
+          <ArrowLeft size={18} strokeWidth={2.4}/><span class="hidden sm:inline">Game</span>
         </A>
         <div class="min-w-0 text-center sm:text-left">
           <h1 class="truncate text-base font-extrabold tracking-[-0.02em] text-slate-900 sm:text-lg">{props.title}</h1>

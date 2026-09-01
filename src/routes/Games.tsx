@@ -60,7 +60,7 @@ export default function Games() {
           <div class="absolute inset-x-0 bottom-0 h-20 bg-slate-800"/>
           <div class="relative z-10 flex h-full items-end justify-between gap-5">
             <div><div class="text-xs font-black uppercase tracking-[0.12em] text-blue-200">Featured</div><div class="mt-2 text-2xl font-black">Panda Dojo</div><p class="mt-1 max-w-sm text-xs leading-5 text-slate-300">Gõ đúng pinyin, gấu trúc phóng phi tiêu hạ từ trước khi chạm đất.</p></div>
-            <img src="/mascot/panda-ranger.svg" alt="Panda Dojo" class="h-28 w-28 shrink-0 object-contain"/>
+            <img src="/mascot/panda-ranger.png" alt="Panda Dojo" class="h-28 w-28 shrink-0 object-contain"/>
           </div>
         </div>
       </div>
@@ -75,7 +75,7 @@ export default function Games() {
       <div class="flex items-end justify-between gap-3"><div><div class="text-xs font-black uppercase tracking-[0.12em] text-blue-700">Arcade</div><h2 class="mt-1 text-xl font-black text-slate-900">Game có nhịp, màn chơi và game feel</h2></div><span class="hidden text-xs text-slate-500 sm:block">Khởi động → Phản xạ → Bão chữ → Cao thủ</span></div>
       <div class="mt-3 grid gap-3 lg:grid-cols-3">
         <A href="/games/falling" class="group relative overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 p-5 text-white no-underline shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg lg:col-span-2">
-          <img src="/mascot/panda-ranger.svg" alt="" aria-hidden="true" class="absolute -bottom-5 right-3 h-36 w-36 object-contain opacity-95 sm:right-6 sm:h-40 sm:w-40"/>
+          <img src="/mascot/panda-ranger.png" alt="" aria-hidden="true" class="absolute -bottom-5 right-3 h-36 w-36 object-contain opacity-95 sm:right-6 sm:h-40 sm:w-40"/>
           <div class="relative z-10 max-w-xl"><div class="text-xs font-black uppercase tracking-[0.12em] text-blue-200">Flagship · Productive retrieval</div><h3 class="mt-3 text-2xl font-black">Falling Recall</h3><p class="mt-2 text-sm leading-6 text-slate-300">Hán / Audio → tự gõ pinyin. Đây là game production chính: không có đáp án 4 lựa chọn để dựa vào.</p><div class="mt-5 flex flex-wrap gap-2"><span class="rounded-full bg-white/10 px-2.5 py-1 text-xs font-bold">4 màn</span><span class="rounded-full bg-white/10 px-2.5 py-1 text-xs font-bold">2 mode</span><span class="rounded-full bg-white/10 px-2.5 py-1 text-xs font-bold">Typing</span></div><div class="mt-6 text-sm font-black text-blue-200">Vào Panda Dojo →</div></div>
         </A>
         <div class="grid gap-3">

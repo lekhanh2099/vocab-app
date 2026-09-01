@@ -88,8 +88,8 @@ export function createArcadeWorld(scene: Phaser.Scene, themeId: ArcadeThemeId, c
       foreground.fillStyle(theme.accent,.9);foreground.fillCircle(baseX+lean,floor-45,4);foreground.fillCircle(baseX+lean+(index%2?6:-5),floor-38,3);
     });
 
-    const responsiveScale=compactHero?(w<560?w/3600:Math.min(w/2400,h/1350)):(w<560?w/3100:Math.min(w/1800,h/1100));
-    const heroScale=compactHero?Phaser.Math.Clamp(responsiveScale,.075,.15):Phaser.Math.Clamp(responsiveScale,.10,.19);
+    const responsiveScale=compactHero?(w<560?w/4700:Math.min(w/3400,h/1900)):(w<560?w/4300:Math.min(w/2800,h/1700));
+    const heroScale=compactHero?Phaser.Math.Clamp(responsiveScale,.055,.095):Phaser.Math.Clamp(responsiveScale,.07,.11);
     const heroShadowScale=compactHero?Phaser.Math.Clamp(heroScale*1.45,.24,.46):Phaser.Math.Clamp(heroScale*1.75,.36,.62);
     hero.setScale(heroScale);
     hero.setPosition(w*heroXRatio,floor+(compactHero?15:8));

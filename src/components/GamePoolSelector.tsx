@@ -114,12 +114,12 @@ export function GamePoolSelector(props: Props) {
         <div class="mt-1.5 flex gap-1.5 overflow-x-auto pb-1">
           <For each={meta().books}>{(book) => <button type="button" class={`min-h-9 shrink-0 rounded-full border px-3 text-[0.6875rem] font-extrabold transition ${props.value().bookId === book.id ? tone().active : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"}`} onClick={() => props.onChange({ ...props.value(), kind: "course", bookId: book.id, lessonId: undefined })}>{book.nameVi}</button>}</For>
         </div>
-        <div class="mt-2"><AppSelect label="Bài / Unit" value={props.value().lessonId ?? ""} options={lessonOptions()} onChange={(lessonId) => { const nextLessonId = lessonId || undefined; if (nextLessonId === props.value().lessonId) return; props.onChange({ ...props.value(), lessonId: nextLessonId }); }}/></div>
+        <div class="mt-2"><AppSelect label="Bài / Unit" value={props.value().lessonId ?? ""} options={lessonOptions()} onChange={(lessonId) => { const nextLessonId = lessonId || undefined; if (nextLessonId === props.value().lessonId) return; props.onChange({ ...props.value(), lessonId: nextLessonId, courseMode: "all" }); }}/></div>
 
         <div class="mt-2 grid gap-1.5 sm:grid-cols-3">
           <button type="button" class={`rounded-lg border px-2.5 py-2 text-left text-[0.6875rem] font-extrabold ${props.value().courseMode !== "learned" && props.value().courseMode !== "all" ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-700"}`} onClick={() => props.onChange({ ...props.value(), courseMode: "smart" })}>Đến hạn <span class="ml-1 text-emerald-700">SRS</span></button>
           <button type="button" class={`rounded-lg border px-2.5 py-2 text-left text-[0.6875rem] font-extrabold ${props.value().courseMode === "learned" ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-700"}`} onClick={() => props.onChange({ ...props.value(), courseMode: "learned" })}>Random đã học</button>
-          <button type="button" class={`rounded-lg border px-2.5 py-2 text-left text-[0.6875rem] font-extrabold ${props.value().courseMode === "all" ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-700"}`} onClick={() => props.onChange({ ...props.value(), courseMode: "all" })}>Khám phá toàn bài</button>
+          <button type="button" class={`rounded-lg border px-2.5 py-2 text-left text-[0.6875rem] font-extrabold ${props.value().courseMode === "all" ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-700"}`} onClick={() => props.onChange({ ...props.value(), courseMode: "all" })}>Luyện toàn bài</button>
         </div>
       </div>
     </Show>

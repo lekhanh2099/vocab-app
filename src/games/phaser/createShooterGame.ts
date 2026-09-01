@@ -46,10 +46,10 @@ class ShooterScene extends Phaser.Scene {
     this.lives=this.difficulty.lives;
   }
   preload(){
-    this.load.svg("panda-ranger","/mascot/panda-ranger.svg");
-    this.load.svg("panda-ranger-throw","/mascot/panda-ranger-throw.svg");
-    this.load.svg("panda-ranger-happy","/mascot/panda-ranger-happy.svg");
-    this.load.svg("panda-ranger-hurt","/mascot/panda-ranger-hurt.svg");
+    this.load.image("panda-ranger","/mascot/panda-ranger.png");
+    this.load.image("panda-ranger-throw","/mascot/panda-ranger-throw.png");
+    this.load.image("panda-ranger-happy","/mascot/panda-ranger-happy.png");
+    this.load.image("panda-ranger-hurt","/mascot/panda-ranger-hurt.png");
   }
   create(){
     this.world=createArcadeWorld(this,this.difficulty.theme,true);

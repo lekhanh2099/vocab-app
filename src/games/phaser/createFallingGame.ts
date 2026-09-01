@@ -44,11 +44,11 @@ class FallingScene extends Phaser.Scene {
     this.lives=this.difficulty.lives;this.maxLives=this.difficulty.lives;
   }
   preload(){
-    this.load.svg("panda-ranger","/mascot/panda-ranger.svg");
-    this.load.svg("panda-ranger-run","/mascot/panda-ranger-run.svg");
-    this.load.svg("panda-ranger-throw","/mascot/panda-ranger-throw.svg");
-    this.load.svg("panda-ranger-happy","/mascot/panda-ranger-happy.svg");
-    this.load.svg("panda-ranger-hurt","/mascot/panda-ranger-hurt.svg");
+    this.load.image("panda-ranger","/mascot/panda-ranger.png");
+    this.load.image("panda-ranger-run","/mascot/panda-ranger-run.png");
+    this.load.image("panda-ranger-throw","/mascot/panda-ranger-throw.png");
+    this.load.image("panda-ranger-happy","/mascot/panda-ranger-happy.png");
+    this.load.image("panda-ranger-hurt","/mascot/panda-ranger-hurt.png");
   }
   create(){this.world=createArcadeWorld(this,this.difficulty.theme);this.scale.on("resize",this.reflow,this);this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>{this.spawnGeneration+=1;this.scale.off("resize",this.reflow,this);this.world?.destroy();});this.world.countdown(()=>void this.spawn());}
   update(time:number,delta:number){
@@ -77,11 +77,11 @@ class FallingScene extends Phaser.Scene {
   }
   backspace(){if(this.awaitingPrompt||this.resolving)return;this.typed=this.typed.slice(0,-1);this.emitState();}
   clear(){if(this.awaitingPrompt||this.resolving)return;this.typed="";this.emitState();}
-  private fontSizeFor(prompt:string){const w=this.scale.width;const base=w>=1000?54:w>=680?46:38;if(prompt.length>12)return Math.max(27,base-12);if(prompt.length>7)return Math.max(31,base-7);return base;}
+  private fontSizeFor(prompt:string){const w=this.scale.width;const base=w>=1000?44:w>=680?38:32;if(prompt.length>12)return Math.max(23,base-10);if(prompt.length>7)return Math.max(26,base-6);return base;}
   private maxLabelWidth(){return Math.max(180,Math.min(this.scale.width*.44,480));}
   private paintTarget(tone:TargetTone="neutral"){
     const card=this.targetCard,label=this.targetLabel;if(!card||!label)return;const max=this.maxLabelWidth();label.setWordWrapWidth(max,true);label.setFontSize(this.fontSizeFor(this.active?.prompt??""));
-    const lw=Math.min(label.width,max);this.targetWidth=Math.max(142,lw+48);this.targetHeight=Math.max(64,label.height+26);
+    const lw=Math.min(label.width,max);this.targetWidth=Math.max(128,lw+36);this.targetHeight=Math.max(54,label.height+20);
     const p=tone==="correct"?{fill:0x062a24,border:0x6ee7b7,text:"#ecfdf5",glow:0x34d399}:tone==="wrong"?{fill:0x3b111c,border:0xfda4af,text:"#fff1f2",glow:0xfb7185}:{fill:0x0b172a,border:0x7dd3fc,text:"#f8fbff",glow:0x38bdf8};
     label.setColor(p.text).setStroke("#020617",tone==="neutral"?2:1);card.clear();card.fillStyle(p.glow,tone==="neutral"?.12:.2);card.fillRoundedRect(-this.targetWidth/2-9,-this.targetHeight/2-9,this.targetWidth+18,this.targetHeight+18,24);card.fillStyle(0x020617,.38);card.fillRoundedRect(-this.targetWidth/2+5,-this.targetHeight/2+8,this.targetWidth,this.targetHeight,18);card.fillStyle(p.fill,.96);card.fillRoundedRect(-this.targetWidth/2,-this.targetHeight/2,this.targetWidth,this.targetHeight,18);card.lineStyle(2.5,p.border,.96);card.strokeRoundedRect(-this.targetWidth/2,-this.targetHeight/2,this.targetWidth,this.targetHeight,18);
   }

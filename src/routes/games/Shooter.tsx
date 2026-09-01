@@ -306,7 +306,7 @@ export default function Shooter() {
           <section class="mx-auto mt-2 w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <div class="grid lg:grid-cols-[1fr_0.95fr]">
               <div class="border-b border-slate-200 p-4 sm:p-5 lg:border-b-0 lg:border-r">
-                <div class="flex items-start gap-4"><img src="/mascot/panda-ranger.svg" alt="Panda Range" class="size-16 shrink-0 object-contain sm:size-18"/><div><div class="text-xs font-black uppercase tracking-[0.12em] text-blue-700">Panda Range</div><h2 class="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">{title()}</h2><p class="mt-2 text-sm leading-6 text-slate-500">{description()} Chọn đúng để gấu trúc phóng phi tiêu phá target; sai thì target được đưa lại vào queue.</p></div></div>
+                <div class="flex items-start gap-4"><img src="/mascot/panda-ranger.png" alt="Panda Range" class="size-16 shrink-0 object-contain sm:size-18"/><div><div class="text-xs font-black uppercase tracking-[0.12em] text-blue-700">Panda Range</div><h2 class="mt-1 text-2xl font-black text-slate-900 sm:text-3xl">{title()}</h2><p class="mt-2 text-sm leading-6 text-slate-500">{description()} Chọn đúng để gấu trúc phóng phi tiêu phá target; sai thì target được đưa lại vào queue.</p></div></div>
                 <div class="mt-4"><GamePoolSelector value={poolSelection} onChange={setPoolSelection} accent="blue" /></div>
                 <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[0.6875rem] font-bold text-slate-500"><span>4 mục tiêu gần nghĩa</span><span>Desktop: 1–4</span><span>iPad/mobile: chạm trực tiếp</span></div>
               </div>
@@ -316,7 +316,7 @@ export default function Shooter() {
         </Show>
 
         <Show when={phase() === "playing"}>
-          <section class="mx-auto flex w-full max-w-[72rem] flex-col gap-2.5">
+          <section class="mx-auto flex w-full max-w-none flex-col gap-2.5">
             <div class="relative h-[clamp(20rem,44dvh,30rem)] overflow-hidden rounded-[1.25rem] border border-slate-900/10 bg-slate-950 shadow-[0_1rem_2.5rem_rgba(15,23,42,0.18)] touch-capable:h-[clamp(23rem,51dvh,34rem)] fine-pointer:h-[clamp(24rem,53dvh,35rem)] landscape:touch-capable:h-[clamp(18rem,56dvh,27rem)]">
               <div class="h-full w-full overflow-hidden [&>canvas]:block [&>canvas]:h-full [&>canvas]:w-full [&>canvas]:touch-none" ref={mount}/>
               <div class="pointer-events-none absolute inset-x-0 top-0 z-10 p-2.5 sm:p-3">
