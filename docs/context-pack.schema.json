@@ -1,0 +1,15 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"Vocab Universe verified context pack",
+  "type":"array",
+  "items":{
+    "type":"object",
+    "required":["id","lexemeId","sentenceZh","sourceType","verified"],
+    "properties":{
+      "id":{"type":"string"},"lexemeId":{"type":"string"},"senseId":{"type":"string"},
+      "sentenceZh":{"type":"string","minLength":1},"pinyin":{"type":"string"},"translationVi":{"type":"string"},
+      "sourceType":{"enum":["book","verified","generated"]},"sourceBookId":{"type":"string"},"sourceLessonId":{"type":"string"},
+      "verified":{"const":true}
+    }
+  }
+}
