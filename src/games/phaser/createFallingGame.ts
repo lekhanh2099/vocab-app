@@ -77,13 +77,13 @@ class FallingScene extends Phaser.Scene {
   }
   backspace(){if(this.awaitingPrompt||this.resolving)return;this.typed=this.typed.slice(0,-1);this.emitState();}
   clear(){if(this.awaitingPrompt||this.resolving)return;this.typed="";this.emitState();}
-  private fontSizeFor(prompt:string){const w=this.scale.width;const base=w>=1000?44:w>=680?38:32;if(prompt.length>12)return Math.max(23,base-10);if(prompt.length>7)return Math.max(26,base-6);return base;}
+  private fontSizeFor(prompt:string){const w=this.scale.width;const base=w>=1000?34:w>=680?30:26;if(prompt.length>12)return Math.max(20,base-8);if(prompt.length>7)return Math.max(22,base-5);return base;}
   private maxLabelWidth(){return Math.max(180,Math.min(this.scale.width*.44,480));}
   private paintTarget(tone:TargetTone="neutral"){
     const card=this.targetCard,label=this.targetLabel;if(!card||!label)return;const max=this.maxLabelWidth();label.setWordWrapWidth(max,true);label.setFontSize(this.fontSizeFor(this.active?.prompt??""));
-    const lw=Math.min(label.width,max);this.targetWidth=Math.max(128,lw+36);this.targetHeight=Math.max(54,label.height+20);
-    const p=tone==="correct"?{fill:0x062a24,border:0x6ee7b7,text:"#ecfdf5",glow:0x34d399}:tone==="wrong"?{fill:0x3b111c,border:0xfda4af,text:"#fff1f2",glow:0xfb7185}:{fill:0x0b172a,border:0x7dd3fc,text:"#f8fbff",glow:0x38bdf8};
-    label.setColor(p.text).setStroke("#020617",tone==="neutral"?2:1);card.clear();card.fillStyle(p.glow,tone==="neutral"?.12:.2);card.fillRoundedRect(-this.targetWidth/2-9,-this.targetHeight/2-9,this.targetWidth+18,this.targetHeight+18,24);card.fillStyle(0x020617,.38);card.fillRoundedRect(-this.targetWidth/2+5,-this.targetHeight/2+8,this.targetWidth,this.targetHeight,18);card.fillStyle(p.fill,.96);card.fillRoundedRect(-this.targetWidth/2,-this.targetHeight/2,this.targetWidth,this.targetHeight,18);card.lineStyle(2.5,p.border,.96);card.strokeRoundedRect(-this.targetWidth/2,-this.targetHeight/2,this.targetWidth,this.targetHeight,18);
+    const lw=Math.min(label.width,max);this.targetWidth=Math.max(80,lw+16);this.targetHeight=Math.max(40,label.height+10);
+    const color=tone==="correct"?"#a7f3d0":tone==="wrong"?"#fecdd3":"#f8fbff";
+    label.setColor(color).setStroke("#020617",tone==="neutral"?2:1);card.clear();
   }
   private reflow(){this.world?.reflow();if(!this.target)return;const w=this.scale.width,safe=Math.max(88,Math.min(150,w*.13));this.target.setX(Phaser.Math.Clamp(w*this.xRatio,safe,w-safe));this.paintTarget("neutral");this.world?.followTarget(this.target.x);}
   private nextXRatio(prompt:string){if(prompt.length>9)return .60;if(this.scale.width<560)return [.54,.72][Phaser.Math.Between(0,1)] ?? .62;const slots=[.43,.59,.72];return slots[Phaser.Math.Between(0,slots.length-1)] ?? .59;}
@@ -130,5 +130,6 @@ export function createFallingGame(parent:HTMLElement,items:FallingItem[],callbac
   const scene=new FallingScene(items,callbacks,difficulty);const width=Math.max(320,Math.floor(parent.clientWidth||960)),height=Math.max(320,Math.floor(parent.clientHeight||560));
   const game=new Phaser.Game({type:Phaser.AUTO,parent,width,height,backgroundColor:"#08111f",scene,scale:{mode:Phaser.Scale.RESIZE,autoCenter:Phaser.Scale.CENTER_BOTH,width,height},render:{antialias:true,antialiasGL:true,roundPixels:false,powerPreference:"high-performance"}});
   const refresh=()=>{const w=Math.max(320,Math.floor(parent.clientWidth)),h=Math.max(320,Math.floor(parent.clientHeight));if(w&&h)game.scale.resize(w,h);game.scale.refresh();};
-  return{typeChar:(c)=>scene.typeChar(c),backspace:()=>scene.backspace(),clear:()=>scene.clear(),pause:()=>game.scene.pause("falling"),resume:()=>game.scene.resume("falling"),refresh,destroy:()=>game.destroy(true)};
+  const resizeObserver=new ResizeObserver(()=>refresh());resizeObserver.observe(parent);
+  return{typeChar:(c)=>scene.typeChar(c),backspace:()=>scene.backspace(),clear:()=>scene.clear(),pause:()=>game.scene.pause("falling"),resume:()=>game.scene.resume("falling"),refresh,destroy:()=>{resizeObserver.disconnect();game.destroy(true);}};
 }

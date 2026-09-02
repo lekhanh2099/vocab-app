@@ -363,9 +363,9 @@ export default function Falling() {
           </Show>
 
           <Show when={phase() === "playing"}>
-            <section class="mx-auto flex w-full max-w-none flex-col gap-2.5">
-              <div class="relative h-[clamp(19rem,43dvh,29rem)] overflow-hidden rounded-[1.25rem] border border-slate-900/10 bg-slate-950 shadow-[0_1rem_2.5rem_rgba(15,23,42,0.18)] touch-capable:h-[clamp(23rem,50dvh,33rem)] fine-pointer:h-[clamp(24rem,52dvh,34rem)] landscape:touch-capable:h-[clamp(18rem,55dvh,26rem)]">
-                <div class="h-full w-full overflow-hidden [&>canvas]:block [&>canvas]:h-full [&>canvas]:w-full [&>canvas]:touch-none" ref={mount}/>
+            <section class="mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-2.5">
+              <div class="relative min-h-[clamp(19rem,43dvh,29rem)] flex-1 overflow-hidden rounded-[1.25rem] border border-slate-900/10 bg-slate-950 shadow-[0_1rem_2.5rem_rgba(15,23,42,0.18)] touch-capable:min-h-[clamp(23rem,50dvh,33rem)] fine-pointer:min-h-[clamp(24rem,52dvh,34rem)] landscape:touch-capable:min-h-[clamp(18rem,55dvh,26rem)]">
+                <div class="absolute inset-0 overflow-hidden [&>canvas]:block [&>canvas]:h-full [&>canvas]:w-full [&>canvas]:touch-none" ref={mount}/>
 
                 <div class="pointer-events-none absolute inset-x-0 top-0 z-10 p-2.5 sm:p-3">
                   <div class="flex flex-wrap items-center gap-1 sm:gap-1.5">

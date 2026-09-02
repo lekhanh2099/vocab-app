@@ -162,5 +162,6 @@ export function createShooterGame(parent:HTMLElement,items:ShooterQuestion[],cal
   const scene=new ShooterScene(items,callbacks,difficulty);const width=Math.max(320,Math.floor(parent.clientWidth||960));const height=Math.max(320,Math.floor(parent.clientHeight||560));
   const game=new Phaser.Game({type:Phaser.AUTO,parent,width,height,backgroundColor:"#0d1826",scene,scale:{mode:Phaser.Scale.RESIZE,autoCenter:Phaser.Scale.CENTER_BOTH,width,height},render:{antialias:true,antialiasGL:true,roundPixels:false,powerPreference:"high-performance"}});
   const refresh=()=>{const w=Math.max(320,Math.floor(parent.clientWidth));const h=Math.max(320,Math.floor(parent.clientHeight));if(w&&h)game.scale.resize(w,h);game.scale.refresh();};
-  return{choose:(index)=>scene.choose(index),pause:()=>game.scene.pause("shooter"),resume:()=>game.scene.resume("shooter"),refresh,destroy:()=>game.destroy(true)};
+  const resizeObserver=new ResizeObserver(()=>refresh());resizeObserver.observe(parent);
+  return{choose:(index)=>scene.choose(index),pause:()=>game.scene.pause("shooter"),resume:()=>game.scene.resume("shooter"),refresh,destroy:()=>{resizeObserver.disconnect();game.destroy(true);}};
 }

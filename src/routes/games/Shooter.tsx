@@ -316,9 +316,9 @@ export default function Shooter() {
         </Show>
 
         <Show when={phase() === "playing"}>
-          <section class="mx-auto flex w-full max-w-none flex-col gap-2.5">
-            <div class="relative h-[clamp(20rem,44dvh,30rem)] overflow-hidden rounded-[1.25rem] border border-slate-900/10 bg-slate-950 shadow-[0_1rem_2.5rem_rgba(15,23,42,0.18)] touch-capable:h-[clamp(23rem,51dvh,34rem)] fine-pointer:h-[clamp(24rem,53dvh,35rem)] landscape:touch-capable:h-[clamp(18rem,56dvh,27rem)]">
-              <div class="h-full w-full overflow-hidden [&>canvas]:block [&>canvas]:h-full [&>canvas]:w-full [&>canvas]:touch-none" ref={mount}/>
+          <section class="mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-2.5">
+            <div class="relative min-h-[clamp(20rem,44dvh,30rem)] flex-1 overflow-hidden rounded-[1.25rem] border border-slate-900/10 bg-slate-950 shadow-[0_1rem_2.5rem_rgba(15,23,42,0.18)] touch-capable:min-h-[clamp(23rem,51dvh,34rem)] fine-pointer:min-h-[clamp(24rem,53dvh,35rem)] landscape:touch-capable:min-h-[clamp(18rem,56dvh,27rem)]">
+              <div class="absolute inset-0 overflow-hidden [&>canvas]:block [&>canvas]:h-full [&>canvas]:w-full [&>canvas]:touch-none" ref={mount}/>
               <div class="pointer-events-none absolute inset-x-0 top-0 z-10 p-2.5 sm:p-3">
                 <div class="flex flex-wrap items-center gap-1 sm:gap-1.5">
                   <span class="rounded-full border border-white/10 bg-slate-950/72 px-2 py-1 text-[0.625rem] font-black text-white backdrop-blur">M{activeStage().number} · {activeStage().name}</span>
