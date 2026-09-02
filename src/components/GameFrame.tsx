@@ -34,8 +34,8 @@ export function GameFrame(props: GameFrameProps) {
   });
 
   return (
-    <div class={`game-page mx-auto flex min-h-dvh w-full flex-col gap-4 px-3 pb-[calc(1rem_+_env(safe-area-inset-bottom))] sm:px-4 lg:px-6 ${props.compact ? "max-w-5xl" : "max-w-none"}`}>
-      <header class="sticky top-0 z-30 grid min-h-14 grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 border-b border-slate-200/80 bg-[#f7f7f5]/95 pb-2 pt-[calc(0.5rem_+_env(safe-area-inset-top))] backdrop-blur-xl sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-3">
+    <div class={`game-page mx-auto flex min-h-dvh w-full flex-col gap-2 px-3 pb-[calc(0.5rem_+_env(safe-area-inset-bottom))] pt-[env(safe-area-inset-top)] sm:gap-4 sm:px-4 sm:pb-[calc(1rem_+_env(safe-area-inset-bottom))] sm:pt-0 lg:px-6 ${props.compact ? "max-w-5xl" : "max-w-none"}`}>
+      <header class="sticky top-0 z-30 hidden min-h-12 grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 border-b border-slate-200/80 bg-[#f7f7f5]/95 pb-1 pt-[calc(0.25rem_+_env(safe-area-inset-top))] backdrop-blur-xl sm:grid sm:min-h-14 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-3 sm:pb-2 sm:pt-[calc(0.5rem_+_env(safe-area-inset-top))]">
         <A href="/games" class="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 text-sm font-bold text-slate-800 no-underline shadow-sm transition hover:border-slate-300 hover:shadow sm:px-3" aria-label="Quay lại danh sách game">
           <ArrowLeft size={18} strokeWidth={2.4}/><span class="hidden sm:inline">Game</span>
         </A>
@@ -46,7 +46,7 @@ export function GameFrame(props: GameFrameProps) {
         <div class="flex min-w-0 items-center justify-end gap-2">
           <Show when={props.meta}><div class="hidden whitespace-nowrap text-xs text-slate-500 md:block">{props.meta}</div></Show>
           <Show when={(props.shortcuts?.length ?? 0) > 0}>
-            <button class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-2.5 text-sm font-extrabold text-slate-800 shadow-sm transition hover:border-slate-300 hover:shadow sm:min-w-0 sm:gap-1.5 sm:px-3" type="button" onClick={() => setShowHelp((value) => !value)} aria-expanded={showHelp()} aria-label="Xem phím tắt">
+            <button class="hidden min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-2.5 text-sm font-extrabold text-slate-800 shadow-sm transition hover:border-slate-300 hover:shadow sm:inline-flex sm:min-w-0 sm:gap-1.5 sm:px-3" type="button" onClick={() => setShowHelp((value) => !value)} aria-expanded={showHelp()} aria-label="Xem phím tắt">
               <CircleHelp size={18} strokeWidth={2.3}/><span class="hidden sm:inline">Phím tắt</span>
             </button>
           </Show>

@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import { Delete, Eraser, Gauge, Heart, Keyboard, Pause, Play, Shield, TimerReset, Volume2, CheckCircle2, Circle } from "lucide-solid";
+import { Delete, Eraser, Gauge, Heart, Shield, TimerReset, Volume2, CheckCircle2, Circle } from "lucide-solid";
 import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import { GameFrame, GameResult, ShortcutHint } from "../../components/GameFrame";
 import { GamePoolSelector } from "../../components/GamePoolSelector";
@@ -363,7 +363,7 @@ export default function Falling() {
           </Show>
 
           <Show when={phase() === "playing"}>
-            <section class="mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-2.5">
+            <section class="mx-auto flex min-h-0 w-full max-w-none flex-1 flex-col gap-2 sm:gap-2.5">
               <div class="relative min-h-[clamp(19rem,43dvh,29rem)] flex-1 overflow-hidden rounded-[1.25rem] border border-slate-900/10 bg-slate-950 shadow-[0_1rem_2.5rem_rgba(15,23,42,0.18)] touch-capable:min-h-[clamp(23rem,50dvh,33rem)] fine-pointer:min-h-[clamp(24rem,52dvh,34rem)] landscape:touch-capable:min-h-[clamp(18rem,55dvh,26rem)]">
                 <div class="absolute inset-0 overflow-hidden [&>canvas]:block [&>canvas]:h-full [&>canvas]:w-full [&>canvas]:touch-none" ref={mount}/>
 
@@ -392,26 +392,21 @@ export default function Falling() {
                 <Show when={paused()}><div class="absolute inset-0 z-20 grid place-items-center bg-slate-950/60 p-4 backdrop-blur-sm"><div class="grid max-w-sm justify-items-center gap-2 rounded-3xl border border-white/10 bg-slate-950/90 p-6 text-center text-white shadow-2xl"><b class="text-xl font-black">Đã tạm dừng</b><p class="text-xs leading-5 text-slate-300">{pauseReason() === "background" || pauseReason() === "pagehide" ? "Game tự pause khi bạn chuyển app hoặc khóa màn hình." : "Nhịp chơi và mạng được giữ nguyên."}</p><button class="mt-1 min-h-12 rounded-xl bg-white px-5 text-sm font-extrabold text-slate-900" type="button" onClick={togglePause}>▶ Tiếp tục</button></div></div></Show>
               </div>
 
-              <div class="rounded-2xl border border-slate-800 bg-slate-950 p-2.5 text-white shadow-lg sm:p-3 touch-capable:sticky touch-capable:bottom-[max(0.5rem,env(safe-area-inset-bottom))] touch-capable:z-20">
-                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2 fine-pointer:hidden">
-                  <div class="flex items-center gap-2"><span class="grid size-9 place-items-center rounded-xl bg-white/10 text-cyan-200"><Keyboard size={18} strokeWidth={2.2}/></span><div><div class="text-[0.625rem] font-black uppercase tracking-[0.14em] text-slate-500">Pinyin console</div><div class="text-xs font-bold text-slate-300">{toneMode() === "numbers" ? "Nhập không dấu + số thanh, ví dụ qi1xian4" : "Nhập pinyin không dấu, ví dụ qixian"}</div></div></div>
-                  <div class="flex items-center gap-2"><Show when={mode() === "audio"}><button class="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white/8 px-3 text-xs font-black text-white transition hover:bg-white/12 disabled:opacity-40" type="button" disabled={paused() || audioBusy()} onClick={() => void replay()}><Volume2 size={15}/>Nghe lại</button></Show><button class="inline-flex min-h-10 items-center gap-2 rounded-xl bg-white/8 px-3 text-xs font-black text-white transition hover:bg-white/12" type="button" onClick={togglePause}>{paused() ? <><Play size={15}/>Tiếp</> : <><Pause size={15}/>Pause</>}</button></div>
-                </div>
-
-                <div class="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-                  <div class={`min-h-[4.25rem] rounded-2xl border px-4 py-2.5 transition ${state().validPrefix ? "border-white/10 bg-white/8" : "border-red-400/50 bg-red-500/15"}`} aria-live="polite">
-                    <div class="flex min-h-7 flex-wrap items-center justify-center gap-1 font-mono text-lg font-black tracking-[0.08em] sm:text-xl"><Show when={!audioBusy()} fallback={<span class="text-sm tracking-normal text-cyan-200">Đang phát âm…</span>}><Show when={state().typed.length > 0} fallback={<span class="text-sm tracking-normal text-slate-500">Gõ pinyin để khóa mục tiêu…</span>}>{[...state().typed].map((char) => <span class="grid min-w-5 place-items-center border-b-2 border-cyan-300/70 pb-0.5 text-white">{char}</span>)}</Show></Show></div>
-                    <div class="mt-1 flex min-h-5 flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-center">
+              <div class="rounded-xl border border-slate-800 bg-slate-950 p-2 text-white shadow-lg sm:rounded-2xl sm:p-3 touch-capable:sticky touch-capable:bottom-[max(0.5rem,env(safe-area-inset-bottom))] touch-capable:z-20">
+                <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:mt-3 sm:grid-cols-1 sm:gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+                  <div class={`min-h-14 rounded-xl border px-3 py-1.5 transition sm:min-h-[4.25rem] sm:rounded-2xl sm:px-4 sm:py-2.5 ${state().validPrefix ? "border-white/10 bg-white/8" : "border-red-400/50 bg-red-500/15"}`} aria-live="polite">
+                    <div class="flex min-h-6 flex-wrap items-center justify-center gap-1 font-mono text-base font-black tracking-[0.08em] sm:min-h-7 sm:text-xl"><Show when={!audioBusy()} fallback={<span class="text-xs tracking-normal text-cyan-200 sm:text-sm">Đang phát âm…</span>}><Show when={state().typed.length > 0} fallback={<span class="text-xs tracking-normal text-slate-500 sm:text-sm">Gõ pinyin để khóa mục tiêu…</span>}>{[...state().typed].map((char) => <span class="grid min-w-5 place-items-center border-b-2 border-cyan-300/70 pb-0.5 text-white">{char}</span>)}</Show></Show></div>
+                    <div class="mt-0.5 flex min-h-4 flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-center sm:mt-1 sm:min-h-5">
                       <Show when={answerFeedback()} fallback={<span class={`text-[0.6875rem] font-bold ${state().validPrefix ? "text-slate-500" : "text-red-300"}`}>{state().validPrefix ? "Khớp hoàn toàn sẽ tự bắn" : "Prefix chưa đúng — xóa ký tự cuối rồi sửa"}</span>}>{(feedback) => <><span class={`text-[0.625rem] font-black uppercase tracking-[0.1em] ${feedback().kind === "correct" ? "text-emerald-300" : "text-rose-300"}`}>{feedback().kind === "correct" ? "✓" : "Đáp án"}</span><span class="font-black text-white">{feedback().hanzi}</span><span class="font-mono font-black text-cyan-200">{feedback().pinyin}</span><Show when={feedback().meaning}><span class="text-[0.6875rem] font-bold text-slate-400">{feedback().meaning}</span></Show></>}</Show>
                     </div>
                   </div>
-                  <div class="flex justify-center gap-2 lg:justify-end"><button class="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/8 px-4 text-xs font-black text-white transition hover:bg-white/12 disabled:opacity-40" type="button" disabled={paused() || audioBusy() || !state().typed} onClick={() => controller?.backspace()}><Delete size={16}/>Xóa</button><button class="inline-flex min-h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/8 px-4 text-xs font-black text-white transition hover:bg-white/12 disabled:opacity-40" type="button" disabled={paused() || audioBusy() || !state().typed} onClick={() => controller?.clear()}><Eraser size={16}/>Clear</button></div>
+                  <div class="flex justify-center gap-2 lg:justify-end"><button class="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/8 px-2 text-xs font-black text-white transition hover:bg-white/12 disabled:opacity-40 sm:min-h-10 sm:min-w-0 sm:px-4" type="button" aria-label="Xóa ký tự cuối" disabled={paused() || audioBusy() || !state().typed} onClick={() => controller?.backspace()}><Delete size={16}/><span class="hidden sm:inline">Xóa</span></button><button class="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/8 px-2 text-xs font-black text-white transition hover:bg-white/12 disabled:opacity-40 sm:min-h-10 sm:min-w-0 sm:px-4" type="button" aria-label="Xóa toàn bộ pinyin" disabled={paused() || audioBusy() || !state().typed} onClick={() => controller?.clear()}><Eraser size={16}/><span class="hidden sm:inline">Clear</span></button></div>
                 </div>
 
-                <div class="mt-3 hidden flex-wrap justify-center gap-2 fine-pointer:flex touch-capable:!hidden"><ShortcutHint keys="A–Z">Gõ trực tiếp</ShortcutHint><ShortcutHint keys="⌫">Xóa</ShortcutHint><ShortcutHint keys="Space">Pause</ShortcutHint></div>
-                <div class="mt-3 hidden gap-1.5 touch-capable:grid" aria-label="Bàn phím pinyin trong game">
-                  <Show when={toneMode() === "numbers"}><div class="flex gap-1.5">{["1","2","3","4","5"].map((key) => <button class={keyClass} type="button" disabled={paused() || audioBusy()} aria-label={`Thanh ${key}`} onClick={() => controller?.typeChar(key)}>{key}</button>)}</div></Show>
-                  {keys.map((row) => <div class="flex gap-1.5">{[...row].map((key) => <button class={keyClass} type="button" disabled={paused() || audioBusy()} aria-label={`Phím ${key}`} onClick={() => controller?.typeChar(key)}>{key}</button>)}</div>)}
+                <div class="mt-3 hidden flex-wrap justify-center gap-2 fine-pointer:flex max-sm:!hidden touch-capable:!hidden"><ShortcutHint keys="A–Z">Gõ trực tiếp</ShortcutHint><ShortcutHint keys="⌫">Xóa</ShortcutHint><ShortcutHint keys="Space">Pause</ShortcutHint></div>
+                <div class="mt-2 hidden gap-1 touch-capable:grid sm:mt-3 sm:gap-1.5" aria-label="Bàn phím pinyin trong game">
+                  <Show when={toneMode() === "numbers"}><div class="flex gap-1 sm:gap-1.5">{["1","2","3","4","5"].map((key) => <button class={keyClass} type="button" disabled={paused() || audioBusy()} aria-label={`Thanh ${key}`} onClick={() => controller?.typeChar(key)}>{key}</button>)}</div></Show>
+                  {keys.map((row) => <div class="flex gap-1 sm:gap-1.5">{[...row].map((key) => <button class={keyClass} type="button" disabled={paused() || audioBusy()} aria-label={`Phím ${key}`} onClick={() => controller?.typeChar(key)}>{key}</button>)}</div>)}
                 </div>
               </div>
             </section>
