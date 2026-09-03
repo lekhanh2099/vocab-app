@@ -3,10 +3,15 @@
   "git": {
     "deploymentEnabled": {
       "*": false,
-      "main": true
+      "main": true,
+      "feature/google-sheet-data-source": false
     }
   },
   "rewrites": [
+    {
+      "source": "/api/vocabulary",
+      "destination": "/api/vocabulary.js"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"

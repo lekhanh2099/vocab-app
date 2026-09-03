@@ -1,21 +1,10 @@
-import seed from "../data/seed.json";
 import { db } from "./database";
-import type { AppSettingsRecord, ContextItem } from "../domain/models";
+import type { AppSettingsRecord } from "../domain/models";
+import { fetchSheetDatasetWithTimeout } from "../services/data/sheet";
+import type { CanonicalDataset } from "../services/data/canonical";
 import { ensureStudyCard } from "../services/srs/scheduler";
 
-interface CanonicalSeed {
-  version: string;
-  generatedAt: string;
-  books: typeof seed.books;
-  lessons: typeof seed.lessons;
-  lexemes: typeof seed.lexemes;
-  readings: typeof seed.readings;
-  senses: typeof seed.senses;
-  occurrences: typeof seed.occurrences;
-  contexts: ContextItem[];
-}
-
-const canonical = seed as CanonicalSeed;
+let sheetSyncInFlight: Promise<void> | undefined;
 
 export const DEFAULT_SETTINGS: AppSettingsRecord = {
   id: "app",
@@ -28,11 +17,8 @@ export const DEFAULT_SETTINGS: AppSettingsRecord = {
   reducedMotion: false
 };
 
-export async function seedDatabase(): Promise<void> {
+async function applyCanonicalDataset(canonical: CanonicalDataset): Promise<void> {
   const current = await db.datasetMeta.get("dataset");
-  const settings = await db.settings.get("app");
-  if (!settings) await db.settings.put(DEFAULT_SETTINGS);
-  else if (settings.audioStrategy === undefined) await db.settings.put({ ...settings, audioStrategy: "offline", audioRate: settings.audioRate || 0.9 });
   if (current?.version === canonical.version) return;
 
   const customContexts = await db.contexts.filter((item) => item.sourceType !== "book").toArray();
@@ -42,7 +28,8 @@ export async function seedDatabase(): Promise<void> {
   const sensesByLexeme = new Map<string, typeof canonical.senses>();
   for (const sense of canonical.senses) {
     const list = sensesByLexeme.get(sense.lexemeId) ?? [];
-    list.push(sense); sensesByLexeme.set(sense.lexemeId, list);
+    list.push(sense);
+    sensesByLexeme.set(sense.lexemeId, list);
   }
   const validCustomContexts = customContexts.flatMap((item) => {
     const lexeme = lexemeById.get(item.lexemeId);
@@ -51,6 +38,7 @@ export async function seedDatabase(): Promise<void> {
     const senses = sensesByLexeme.get(item.lexemeId) ?? [];
     return senses.length === 1 ? [{ ...item, senseId: senses[0]!.id }] : [];
   });
+
   await db.transaction(
     "rw",
     [db.books, db.lessons, db.lexemes, db.readings, db.senses, db.occurrences, db.contexts, db.studyCards, db.reviewLogs, db.favorites, db.wordFlags, db.gameEvents, db.datasetMeta],
@@ -82,9 +70,35 @@ export async function seedDatabase(): Promise<void> {
       await db.datasetMeta.put({ id: "dataset", version: canonical.version, generatedAt: canonical.generatedAt, seededAt: new Date().toISOString() });
     }
   );
+
   const usageSenseIds = new Set([...canonical.contexts, ...validCustomContexts].map((item) => item.senseId).filter((id): id is string => Boolean(id)));
   for (const senseId of usageSenseIds) {
     const sense = await db.senses.get(senseId);
     if (sense) await ensureStudyCard(sense, "usage");
   }
+}
+
+export function refreshDatasetFromSheet(): Promise<void> {
+  if (sheetSyncInFlight) return sheetSyncInFlight;
+  sheetSyncInFlight = (async () => {
+    const canonical = await fetchSheetDatasetWithTimeout(5000);
+    await applyCanonicalDataset(canonical);
+  })().finally(() => {
+    sheetSyncInFlight = undefined;
+  });
+  return sheetSyncInFlight;
+}
+
+export async function seedDatabase(): Promise<void> {
+  const settings = await db.settings.get("app");
+  if (!settings) await db.settings.put(DEFAULT_SETTINGS);
+  else if (settings.audioStrategy === undefined) await db.settings.put({ ...settings, audioStrategy: "offline", audioRate: settings.audioRate || 0.9 });
+
+  const current = await db.datasetMeta.get("dataset");
+  if (current) {
+    void refreshDatasetFromSheet().catch((error) => console.warn("Vocabulary Sheet sync skipped; using cached IndexedDB dataset.", error));
+    return;
+  }
+
+  await applyCanonicalDataset(await fetchSheetDatasetWithTimeout(10000));
 }
