@@ -1,16 +1,18 @@
-import { A, useNavigate } from "@solidjs/router";
+import { useNavigate } from "@solidjs/router";
 import { createEffect, createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js";
-import { BookmarkPlus, CheckSquare2, Grid2X2, Search, Star, Table2, Repeat2, ChevronDown } from "lucide-solid";
+import { BookmarkPlus, CheckSquare2, ChevronDown, Grid2X2, Repeat2, Search, Star, Table2 } from "lucide-solid";
+import { VocabularyQuickPanel } from "../components/VocabularyQuickPanel";
 import { createDexieQuery } from "../db/liveQuery";
 import { db } from "../db/database";
 import { getVocabularyRows } from "../db/repositories";
+import type { VocabularyRow } from "../domain/models";
 import { deriveLexemeMastery } from "../services/srs/mastery";
 import { normalizeSearch, toneSignature } from "../features/search/normalize";
 import { saveStudySet, setManualStudyPool } from "../features/study/pool";
 import { AppSelect, Field, inputClass, SectionHeader, surface } from "../components/ui";
 
 const PAGE_SIZE = 72;
-const toggleBase = "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-3 text-xs font-extrabold transition";
+const toggleBase = "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-3 text-sm font-extrabold transition";
 
 export default function Vocabulary() {
   const navigate = useNavigate();
@@ -26,8 +28,10 @@ export default function Vocabulary() {
   const [view, setView] = createSignal<"cards" | "table">("cards");
   const [visibleLimit, setVisibleLimit] = createSignal(PAGE_SIZE);
   const [selectedIds, setSelectedIds] = createSignal<string[]>([]);
+  const [quickLexemeId, setQuickLexemeId] = createSignal<string>();
   let sentinel!: HTMLDivElement;
   let observer: IntersectionObserver | undefined;
+  let searchInput!: HTMLInputElement;
 
   const selectedSet = createMemo(() => new Set(selectedIds()));
   const filteredLessons = createMemo(() => lessons().filter((lesson) => !bookId() || lesson.bookId === bookId()));
@@ -48,10 +52,17 @@ export default function Vocabulary() {
   });
   const visible = createMemo(() => filtered().slice(0, visibleLimit()));
   const hasMore = createMemo(() => visible().length < filtered().length);
+  const quickIndex = createMemo(() => quickLexemeId() ? filtered().findIndex((row) => row.lexeme.id === quickLexemeId()) : -1);
 
   createEffect(() => {
     query(); bookId(); lessonId(); mastery(); duplicatesOnly(); favoritesOnly(); view();
     setVisibleLimit(PAGE_SIZE);
+  });
+
+  createEffect(() => {
+    const id = quickLexemeId();
+    if (!id) return;
+    if (!filtered().some((row) => row.lexeme.id === id)) setQuickLexemeId(undefined);
   });
 
   onMount(() => {
@@ -60,10 +71,21 @@ export default function Vocabulary() {
       setVisibleLimit((value) => Math.min(filtered().length, value + PAGE_SIZE));
     }, { rootMargin: "700px 0px" });
     observer.observe(sentinel);
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target;
+      const typing = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement;
+      if (event.key === "/" && !typing && !quickLexemeId()) {
+        event.preventDefault();
+        searchInput?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    onCleanup(() => window.removeEventListener("keydown", onKeyDown));
   });
   onCleanup(() => observer?.disconnect());
 
-  const sourceText = (row: ReturnType<typeof rows>[number]) => {
+  const sourceText = (row: VocabularyRow) => {
     const names = row.books.map((book) => book.nameVi);
     return names.slice(0, 2).join(" · ") + (names.length > 2 ? ` · +${names.length - 2}` : "");
   };
@@ -85,38 +107,44 @@ export default function Vocabulary() {
     if (!name?.trim()) return;
     saveStudySet(name, { kind: "manual", lexemeIds: selectedIds(), courseMode: "all", label: name.trim() });
   };
+  const moveQuick = (offset: number) => {
+    const index = quickIndex();
+    if (index < 0) return;
+    const next = filtered()[index + offset];
+    if (next) setQuickLexemeId(next.lexeme.id);
+  };
 
   return <>
-    <SectionHeader title="Kho từ" meta={`${filtered().length.toLocaleString("vi-VN")} / ${rows().length.toLocaleString("vi-VN")}`} description="Tìm, lọc, chọn nhiều từ rồi đẩy thẳng sang Ôn. Danh sách tải dần để ổn định trên web và iPad." />
+    <SectionHeader title="Kho từ" meta={`${filtered().length.toLocaleString("vi-VN")} / ${rows().length.toLocaleString("vi-VN")}`} description="Tìm, lọc, tra nhanh trong panel mà không rời danh sách; chọn nhiều từ rồi đẩy thẳng sang Ôn." />
 
     <section class={`${surface} mt-3 p-3 sm:p-4`}>
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="inline-grid grid-cols-2 rounded-xl bg-slate-100 p-1" aria-label="Kiểu hiển thị">
-          <button type="button" class={`${toggleBase} ${view() === "cards" ? "bg-white text-blue-700 shadow-sm" : "text-slate-500 hover:text-slate-800"}`} onClick={() => setView("cards")}><Grid2X2 size={15}/> Thẻ</button>
-          <button type="button" class={`${toggleBase} ${view() === "table" ? "bg-white text-blue-700 shadow-sm" : "text-slate-500 hover:text-slate-800"}`} onClick={() => setView("table")}><Table2 size={15}/> Bảng</button>
+          <button type="button" class={`${toggleBase} ${view() === "cards" ? "bg-white text-blue-700 shadow-sm" : "text-slate-500 hover:text-slate-800"}`} onClick={() => setView("cards")}><Grid2X2 size={16}/> Thẻ</button>
+          <button type="button" class={`${toggleBase} ${view() === "table" ? "bg-white text-blue-700 shadow-sm" : "text-slate-500 hover:text-slate-800"}`} onClick={() => setView("table")}><Table2 size={16}/> Bảng</button>
         </div>
-        <div class="text-[0.6875rem] leading-5 text-slate-500">汉字 · pinyin · qixian · qi1xian4 · Hán Việt · nghĩa Việt</div>
+        <div class="text-xs leading-5 text-slate-500">汉字 · pinyin · qixian · qi1xian4 · Hán Việt · nghĩa Việt · <b>/</b> để tìm</div>
       </div>
 
       <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(16rem,1.7fr)_1fr_1fr_0.75fr]">
-        <Field label="Tìm"><div class="relative"><Search class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17}/><input class={`${inputClass} pl-10`} type="search" value={query()} onInput={(e) => setQuery(e.currentTarget.value)} placeholder="汉字 / pinyin / nghĩa / Hán Việt" /></div></Field>
+        <Field label="Tìm"><div class="relative"><Search class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17}/><input ref={searchInput} class={`${inputClass} pl-10`} type="search" value={query()} onInput={(event) => setQuery(event.currentTarget.value)} placeholder="汉字 / pinyin / nghĩa / Hán Việt" /></div></Field>
         <AppSelect label="Sách" value={bookId()} options={bookOptions()} onChange={(value) => { setBookId(value); setLessonId(""); }}/>
         <AppSelect label="Bài / Unit" value={lessonId()} options={lessonOptions()} onChange={setLessonId}/>
         <AppSelect label="Mastery" value={mastery()} options={masteryOptions} onChange={setMastery}/>
       </div>
 
       <div class="mt-3 flex flex-wrap gap-2">
-        <button type="button" aria-pressed={duplicatesOnly()} class={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-extrabold transition ${duplicatesOnly() ? "border-blue-200 bg-blue-50 text-blue-700" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"}`} onClick={() => setDuplicatesOnly((v) => !v)}><Repeat2 size={15}/>Từ trùng</button>
-        <button type="button" aria-pressed={favoritesOnly()} class={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-extrabold transition ${favoritesOnly() ? "border-amber-200 bg-amber-50 text-amber-700" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"}`} onClick={() => setFavoritesOnly((v) => !v)}><Star size={15} fill={favoritesOnly() ? "currentColor" : "none"}/>Đánh dấu</button>
-        <button type="button" class="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 text-xs font-extrabold text-slate-600" onClick={selectFiltered}><CheckSquare2 size={15}/>Chọn {filtered().length.toLocaleString("vi-VN")} đang lọc</button>
-        <button type="button" class="inline-flex min-h-10 items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 text-xs font-extrabold text-blue-700" disabled={!filtered().length} onClick={() => startStudy(filtered().map((row) => row.lexeme.id), `Kết quả lọc · ${filtered().length} từ`)}>Ôn kết quả lọc</button>
+        <button type="button" aria-pressed={duplicatesOnly()} class={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-sm font-extrabold transition ${duplicatesOnly() ? "border-blue-200 bg-blue-50 text-blue-700" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"}`} onClick={() => setDuplicatesOnly((value) => !value)}><Repeat2 size={15}/>Từ trùng</button>
+        <button type="button" aria-pressed={favoritesOnly()} class={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-sm font-extrabold transition ${favoritesOnly() ? "border-amber-200 bg-amber-50 text-amber-700" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"}`} onClick={() => setFavoritesOnly((value) => !value)}><Star size={15} fill={favoritesOnly() ? "currentColor" : "none"}/>Đánh dấu</button>
+        <button type="button" class="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 text-sm font-extrabold text-slate-600" onClick={selectFiltered}><CheckSquare2 size={15}/>Chọn {filtered().length.toLocaleString("vi-VN")} đang lọc</button>
+        <button type="button" class="inline-flex min-h-10 items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 text-sm font-extrabold text-blue-700" disabled={!filtered().length} onClick={() => startStudy(filtered().map((row) => row.lexeme.id), `Kết quả lọc · ${filtered().length} từ`)}>Ôn kết quả lọc</button>
       </div>
     </section>
 
     <Show when={selectedIds().length}>
       <section class="sticky top-[4.25rem] z-30 mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-blue-200 bg-blue-50/95 p-3 shadow-sm backdrop-blur-md md:top-2">
-        <div><b class="text-sm text-blue-950">Đã chọn {selectedIds().length.toLocaleString("vi-VN")} từ</b><div class="mt-0.5 text-[0.6875rem] text-blue-700">Bộ tự chọn là practice-only; không tự đẩy FSRS.</div></div>
-        <div class="flex flex-wrap gap-2"><button type="button" class="min-h-10 rounded-xl bg-white px-3 text-xs font-extrabold text-slate-600" onClick={clearSelected}>Bỏ chọn</button><button type="button" class="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-white px-3 text-xs font-extrabold text-blue-700" onClick={saveSelected}><BookmarkPlus size={15}/>Lưu bộ</button><button type="button" class="min-h-10 rounded-xl bg-blue-600 px-4 text-xs font-black text-white" onClick={() => startStudy(selectedIds(), `Đã chọn · ${selectedIds().length} từ`)}>Ôn ngay</button></div>
+        <div><b class="text-sm text-blue-950">Đã chọn {selectedIds().length.toLocaleString("vi-VN")} từ</b><div class="mt-0.5 text-xs text-blue-700">Bộ tự chọn là practice-only; không tự đẩy FSRS.</div></div>
+        <div class="flex flex-wrap gap-2"><button type="button" class="min-h-10 rounded-xl bg-white px-3 text-sm font-extrabold text-slate-600" onClick={clearSelected}>Bỏ chọn</button><button type="button" class="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-white px-3 text-sm font-extrabold text-blue-700" onClick={saveSelected}><BookmarkPlus size={15}/>Lưu bộ</button><button type="button" class="min-h-10 rounded-xl bg-blue-600 px-4 text-sm font-black text-white" onClick={() => startStudy(selectedIds(), `Đã chọn · ${selectedIds().length} từ`)}>Ôn ngay</button></div>
       </section>
     </Show>
 
@@ -125,12 +153,13 @@ export default function Vocabulary() {
         <For each={visible()}>{(row) => {
           const score = () => deriveLexemeMastery(row.cardMastery);
           const selected = () => selectedSet().has(row.lexeme.id);
-          return <div class={`${surface} flex min-w-0 items-center gap-3 px-3.5 py-3 transition ${selected() ? "border-blue-300 ring-2 ring-blue-100" : "hover:border-blue-200 hover:shadow-md"}`}>
+          const open = () => quickLexemeId() === row.lexeme.id;
+          return <div class={`${surface} flex min-w-0 items-center gap-3 px-3.5 py-3 transition ${selected() || open() ? "border-blue-300 ring-2 ring-blue-100" : "hover:border-blue-200 hover:shadow-md"}`}>
             <label class="grid size-11 shrink-0 cursor-pointer place-items-center rounded-xl bg-slate-50" aria-label={`Chọn ${row.lexeme.hanzi}`}><input type="checkbox" class="size-5 accent-blue-600" checked={selected()} onChange={() => toggleSelected(row.lexeme.id)}/></label>
-            <A href={`/vocab/${row.lexeme.id}`} class="flex min-w-0 flex-1 items-center justify-between gap-3 text-slate-900 no-underline">
-              <div class="min-w-0"><div class="text-xl font-black tracking-[-0.02em] sm:text-[1.45rem]">{row.lexeme.hanzi}</div><div class="mt-0.5 truncate text-xs font-bold text-blue-700">{row.readings.map((x) => x.pinyin).join(" / ")}</div><div class="mt-1 truncate text-xs text-slate-500">{row.senses[0]?.meaningVi || row.senses[0]?.hanViet || "—"} · {sourceText(row)}</div></div>
-              <div class={`grid size-10 shrink-0 place-items-center rounded-full text-xs font-black ${score() >= 4 ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{score()}</div>
-            </A>
+            <button type="button" class="flex min-w-0 flex-1 items-center justify-between gap-3 text-left text-slate-900" onClick={() => setQuickLexemeId(row.lexeme.id)}>
+              <div class="min-w-0"><div class="text-xl font-black tracking-[-0.02em] sm:text-[1.45rem]">{row.lexeme.hanzi}</div><div class="mt-0.5 truncate text-sm font-bold text-blue-700">{row.readings.map((reading) => reading.pinyin).join(" / ")}</div><div class="mt-1 truncate text-sm text-slate-500">{row.senses[0]?.meaningVi || row.senses[0]?.hanViet || "—"} · {sourceText(row)}</div></div>
+              <div class={`grid size-10 shrink-0 place-items-center rounded-full text-sm font-black ${score() >= 4 ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{score()}</div>
+            </button>
           </div>;
         }}</For>
       </section>
@@ -138,15 +167,39 @@ export default function Vocabulary() {
 
     <Show when={view() === "table"}>
       <section class={`${surface} mt-3 overflow-x-auto`}>
-        <table class="w-full min-w-[66rem] border-separate border-spacing-0 text-left text-xs text-slate-600">
-          <thead class="sticky top-0 z-10 bg-slate-50 text-[0.6875rem] font-extrabold uppercase tracking-[0.06em] text-slate-500"><tr><th class="w-12 px-3 py-2.5">Chọn</th><th class="px-3 py-2.5">Hán</th><th class="px-3 py-2.5">Pinyin</th><th class="px-3 py-2.5">Nghĩa / Hán Việt</th><th class="px-3 py-2.5">Từ loại</th><th class="px-3 py-2.5">Nguồn</th><th class="px-3 py-2.5 text-center">M</th></tr></thead>
-          <tbody><For each={visible()}>{(row) => { const score = deriveLexemeMastery(row.cardMastery); const selected = () => selectedSet().has(row.lexeme.id); return <tr class={`transition ${selected() ? "bg-blue-50/70" : "hover:bg-slate-50"}`}><td class="border-t border-slate-100 px-3 py-2.5"><input aria-label={`Chọn ${row.lexeme.hanzi}`} type="checkbox" class="size-5 accent-blue-600" checked={selected()} onChange={() => toggleSelected(row.lexeme.id)}/></td><td class="border-t border-slate-100 px-3 py-2.5"><A href={`/vocab/${row.lexeme.id}`} class="text-lg font-black text-slate-900 no-underline hover:text-blue-700">{row.lexeme.hanzi}</A></td><td class="border-t border-slate-100 px-3 py-2.5 font-bold text-blue-700">{row.readings.map((x) => x.pinyin).join(" / ")}</td><td class="border-t border-slate-100 px-3 py-2.5">{row.senses[0]?.meaningVi || row.senses[0]?.hanViet || "—"}</td><td class="border-t border-slate-100 px-3 py-2.5">{row.senses.map((s) => s.pos).filter(Boolean).slice(0,2).join(" · ") || "—"}</td><td class="border-t border-slate-100 px-3 py-2.5">{sourceText(row)}</td><td class="border-t border-slate-100 px-3 py-2.5 text-center"><span class={`inline-grid size-8 place-items-center rounded-full font-black ${score>=4?"bg-emerald-50 text-emerald-700":"bg-slate-100 text-slate-600"}`}>{score}</span></td></tr>; }}</For></tbody>
+        <table class="w-full min-w-[66rem] border-separate border-spacing-0 text-left text-sm text-slate-600">
+          <thead class="sticky top-0 z-10 bg-slate-50 text-xs font-extrabold uppercase tracking-[0.06em] text-slate-500"><tr><th class="w-12 px-3 py-2.5">Chọn</th><th class="px-3 py-2.5">Hán</th><th class="px-3 py-2.5">Pinyin</th><th class="px-3 py-2.5">Nghĩa / Hán Việt</th><th class="px-3 py-2.5">Từ loại</th><th class="px-3 py-2.5">Nguồn</th><th class="px-3 py-2.5 text-center">M</th></tr></thead>
+          <tbody><For each={visible()}>{(row) => {
+            const score = deriveLexemeMastery(row.cardMastery);
+            const selected = () => selectedSet().has(row.lexeme.id);
+            const open = () => quickLexemeId() === row.lexeme.id;
+            return <tr class={`transition ${selected() || open() ? "bg-blue-50/70" : "hover:bg-slate-50"}`}>
+              <td class="border-t border-slate-100 px-3 py-2.5"><input aria-label={`Chọn ${row.lexeme.hanzi}`} type="checkbox" class="size-5 accent-blue-600" checked={selected()} onChange={() => toggleSelected(row.lexeme.id)}/></td>
+              <td class="border-t border-slate-100 px-3 py-2.5"><button type="button" class="text-lg font-black text-slate-900 hover:text-blue-700" onClick={() => setQuickLexemeId(row.lexeme.id)}>{row.lexeme.hanzi}</button></td>
+              <td class="border-t border-slate-100 px-3 py-2.5 font-bold text-blue-700">{row.readings.map((reading) => reading.pinyin).join(" / ")}</td>
+              <td class="border-t border-slate-100 px-3 py-2.5">{row.senses[0]?.meaningVi || row.senses[0]?.hanViet || "—"}</td>
+              <td class="border-t border-slate-100 px-3 py-2.5">{row.senses.map((sense) => sense.pos).filter(Boolean).slice(0,2).join(" · ") || "—"}</td>
+              <td class="border-t border-slate-100 px-3 py-2.5">{sourceText(row)}</td>
+              <td class="border-t border-slate-100 px-3 py-2.5 text-center"><span class={`inline-grid size-8 place-items-center rounded-full font-black ${score >= 4 ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{score}</span></td>
+            </tr>;
+          }}</For></tbody>
         </table>
       </section>
     </Show>
 
-    <div ref={sentinel} class="grid min-h-20 place-items-center py-5 text-center text-xs font-bold text-slate-500">
+    <div ref={sentinel} class="grid min-h-20 place-items-center py-5 text-center text-sm font-bold text-slate-500">
       <Show when={hasMore()} fallback={<span>Đã tải đủ {filtered().length.toLocaleString("vi-VN")} từ.</span>}><span class="inline-flex items-center gap-2"><ChevronDown size={15}/>Đang tải tiếp {visible().length.toLocaleString("vi-VN")} / {filtered().length.toLocaleString("vi-VN")}</span></Show>
     </div>
+
+    <VocabularyQuickPanel
+      lexemeId={quickLexemeId()}
+      onClose={() => setQuickLexemeId(undefined)}
+      onPrevious={() => moveQuick(-1)}
+      onNext={() => moveQuick(1)}
+      hasPrevious={quickIndex() > 0}
+      hasNext={quickIndex() >= 0 && quickIndex() < filtered().length - 1}
+      position={quickIndex() >= 0 ? quickIndex() + 1 : undefined}
+      total={filtered().length}
+    />
   </>;
 }
