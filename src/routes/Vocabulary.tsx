@@ -1,17 +1,19 @@
-import { A } from "@solidjs/router";
+import { A, useNavigate } from "@solidjs/router";
 import { createEffect, createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js";
-import { Grid2X2, Search, Star, Table2, Repeat2, ChevronDown } from "lucide-solid";
+import { BookmarkPlus, CheckSquare2, Grid2X2, Search, Star, Table2, Repeat2, ChevronDown } from "lucide-solid";
 import { createDexieQuery } from "../db/liveQuery";
 import { db } from "../db/database";
 import { getVocabularyRows } from "../db/repositories";
 import { deriveLexemeMastery } from "../services/srs/mastery";
 import { normalizeSearch, toneSignature } from "../features/search/normalize";
+import { saveStudySet, setManualStudyPool } from "../features/study/pool";
 import { AppSelect, Field, inputClass, SectionHeader, surface } from "../components/ui";
 
 const PAGE_SIZE = 72;
 const toggleBase = "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg px-3 text-xs font-extrabold transition";
 
 export default function Vocabulary() {
+  const navigate = useNavigate();
   const rows = createDexieQuery(getVocabularyRows, []);
   const books = createDexieQuery(() => db.books.toArray(), []);
   const lessons = createDexieQuery(() => db.lessons.toArray(), []);
@@ -23,9 +25,11 @@ export default function Vocabulary() {
   const [favoritesOnly, setFavoritesOnly] = createSignal(false);
   const [view, setView] = createSignal<"cards" | "table">("cards");
   const [visibleLimit, setVisibleLimit] = createSignal(PAGE_SIZE);
+  const [selectedIds, setSelectedIds] = createSignal<string[]>([]);
   let sentinel!: HTMLDivElement;
   let observer: IntersectionObserver | undefined;
 
+  const selectedSet = createMemo(() => new Set(selectedIds()));
   const filteredLessons = createMemo(() => lessons().filter((lesson) => !bookId() || lesson.bookId === bookId()));
   const filtered = createMemo(() => {
     const q = normalizeSearch(query());
@@ -67,8 +71,23 @@ export default function Vocabulary() {
   const lessonOptions = createMemo(() => [{ value: "", label: "Tất cả" }, ...filteredLessons().map((lesson) => ({ value: lesson.id, label: `${lesson.label} ${lesson.index} · ${lesson.title}` }))]);
   const masteryOptions = [{ value: "", label: "Tất cả" }, ...[0,1,2,3,4,5].map((value) => ({ value: String(value), label: `${value} / 5` }))];
 
+  const toggleSelected = (id: string) => setSelectedIds((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id]);
+  const selectFiltered = () => setSelectedIds(filtered().map((row) => row.lexeme.id));
+  const clearSelected = () => setSelectedIds([]);
+  const startStudy = (ids: string[], label: string) => {
+    if (!ids.length) return;
+    setManualStudyPool(ids, label);
+    navigate("/study?limit=20");
+  };
+  const saveSelected = () => {
+    if (!selectedIds().length) return;
+    const name = window.prompt("Tên bộ từ", `Bộ ${selectedIds().length} từ`);
+    if (!name?.trim()) return;
+    saveStudySet(name, { kind: "manual", lexemeIds: selectedIds(), courseMode: "all", label: name.trim() });
+  };
+
   return <>
-    <SectionHeader title="Kho từ" meta={`${filtered().length.toLocaleString("vi-VN")} / ${rows().length.toLocaleString("vi-VN")}`} description="Tìm theo Hán tự, pinyin, Hán Việt hoặc nghĩa. Danh sách tải dần khi cuộn để ổn định trên web và iPad." />
+    <SectionHeader title="Kho từ" meta={`${filtered().length.toLocaleString("vi-VN")} / ${rows().length.toLocaleString("vi-VN")}`} description="Tìm, lọc, chọn nhiều từ rồi đẩy thẳng sang Ôn. Danh sách tải dần để ổn định trên web và iPad." />
 
     <section class={`${surface} mt-3 p-3 sm:p-4`}>
       <div class="flex flex-wrap items-center justify-between gap-3">
@@ -89,26 +108,39 @@ export default function Vocabulary() {
       <div class="mt-3 flex flex-wrap gap-2">
         <button type="button" aria-pressed={duplicatesOnly()} class={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-extrabold transition ${duplicatesOnly() ? "border-blue-200 bg-blue-50 text-blue-700" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"}`} onClick={() => setDuplicatesOnly((v) => !v)}><Repeat2 size={15}/>Từ trùng</button>
         <button type="button" aria-pressed={favoritesOnly()} class={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-extrabold transition ${favoritesOnly() ? "border-amber-200 bg-amber-50 text-amber-700" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"}`} onClick={() => setFavoritesOnly((v) => !v)}><Star size={15} fill={favoritesOnly() ? "currentColor" : "none"}/>Đánh dấu</button>
+        <button type="button" class="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 text-xs font-extrabold text-slate-600" onClick={selectFiltered}><CheckSquare2 size={15}/>Chọn {filtered().length.toLocaleString("vi-VN")} đang lọc</button>
+        <button type="button" class="inline-flex min-h-10 items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 text-xs font-extrabold text-blue-700" disabled={!filtered().length} onClick={() => startStudy(filtered().map((row) => row.lexeme.id), `Kết quả lọc · ${filtered().length} từ`)}>Ôn kết quả lọc</button>
       </div>
     </section>
+
+    <Show when={selectedIds().length}>
+      <section class="sticky top-[4.25rem] z-30 mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-blue-200 bg-blue-50/95 p-3 shadow-sm backdrop-blur-md md:top-2">
+        <div><b class="text-sm text-blue-950">Đã chọn {selectedIds().length.toLocaleString("vi-VN")} từ</b><div class="mt-0.5 text-[0.6875rem] text-blue-700">Bộ tự chọn là practice-only; không tự đẩy FSRS.</div></div>
+        <div class="flex flex-wrap gap-2"><button type="button" class="min-h-10 rounded-xl bg-white px-3 text-xs font-extrabold text-slate-600" onClick={clearSelected}>Bỏ chọn</button><button type="button" class="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-white px-3 text-xs font-extrabold text-blue-700" onClick={saveSelected}><BookmarkPlus size={15}/>Lưu bộ</button><button type="button" class="min-h-10 rounded-xl bg-blue-600 px-4 text-xs font-black text-white" onClick={() => startStudy(selectedIds(), `Đã chọn · ${selectedIds().length} từ`)}>Ôn ngay</button></div>
+      </section>
+    </Show>
 
     <Show when={view() === "cards"}>
       <section class="mt-3 grid gap-2 lg:grid-cols-2">
         <For each={visible()}>{(row) => {
           const score = () => deriveLexemeMastery(row.cardMastery);
-          return <A href={`/vocab/${row.lexeme.id}`} class={`${surface} flex min-w-0 items-center justify-between gap-3 px-3.5 py-3 text-slate-900 no-underline transition hover:-translate-y-px hover:border-blue-200 hover:shadow-md`}>
-            <div class="min-w-0"><div class="text-xl font-black tracking-[-0.02em] sm:text-[1.45rem]">{row.lexeme.hanzi}</div><div class="mt-0.5 truncate text-xs font-bold text-blue-700">{row.readings.map((x) => x.pinyin).join(" / ")}</div><div class="mt-1 truncate text-xs text-slate-500">{row.senses[0]?.meaningVi || row.senses[0]?.hanViet || "—"} · {sourceText(row)}</div></div>
-            <div class={`grid size-10 shrink-0 place-items-center rounded-full text-xs font-black ${score() >= 4 ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{score()}</div>
-          </A>;
+          const selected = () => selectedSet().has(row.lexeme.id);
+          return <div class={`${surface} flex min-w-0 items-center gap-3 px-3.5 py-3 transition ${selected() ? "border-blue-300 ring-2 ring-blue-100" : "hover:border-blue-200 hover:shadow-md"}`}>
+            <label class="grid size-11 shrink-0 cursor-pointer place-items-center rounded-xl bg-slate-50" aria-label={`Chọn ${row.lexeme.hanzi}`}><input type="checkbox" class="size-5 accent-blue-600" checked={selected()} onChange={() => toggleSelected(row.lexeme.id)}/></label>
+            <A href={`/vocab/${row.lexeme.id}`} class="flex min-w-0 flex-1 items-center justify-between gap-3 text-slate-900 no-underline">
+              <div class="min-w-0"><div class="text-xl font-black tracking-[-0.02em] sm:text-[1.45rem]">{row.lexeme.hanzi}</div><div class="mt-0.5 truncate text-xs font-bold text-blue-700">{row.readings.map((x) => x.pinyin).join(" / ")}</div><div class="mt-1 truncate text-xs text-slate-500">{row.senses[0]?.meaningVi || row.senses[0]?.hanViet || "—"} · {sourceText(row)}</div></div>
+              <div class={`grid size-10 shrink-0 place-items-center rounded-full text-xs font-black ${score() >= 4 ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>{score()}</div>
+            </A>
+          </div>;
         }}</For>
       </section>
     </Show>
 
     <Show when={view() === "table"}>
       <section class={`${surface} mt-3 overflow-x-auto`}>
-        <table class="w-full min-w-[64rem] border-separate border-spacing-0 text-left text-xs text-slate-600">
-          <thead class="sticky top-0 z-10 bg-slate-50 text-[0.6875rem] font-extrabold uppercase tracking-[0.06em] text-slate-500"><tr><th class="px-3 py-2.5">Hán</th><th class="px-3 py-2.5">Pinyin</th><th class="px-3 py-2.5">Nghĩa / Hán Việt</th><th class="px-3 py-2.5">Từ loại</th><th class="px-3 py-2.5">Nguồn</th><th class="px-3 py-2.5 text-center">M</th></tr></thead>
-          <tbody><For each={visible()}>{(row) => { const score = deriveLexemeMastery(row.cardMastery); return <tr class="border-t border-slate-100 transition hover:bg-slate-50"><td class="border-t border-slate-100 px-3 py-2.5"><A href={`/vocab/${row.lexeme.id}`} class="text-lg font-black text-slate-900 no-underline hover:text-blue-700">{row.lexeme.hanzi}</A></td><td class="border-t border-slate-100 px-3 py-2.5 font-bold text-blue-700">{row.readings.map((x) => x.pinyin).join(" / ")}</td><td class="border-t border-slate-100 px-3 py-2.5">{row.senses[0]?.meaningVi || row.senses[0]?.hanViet || "—"}</td><td class="border-t border-slate-100 px-3 py-2.5">{row.senses.map((s) => s.pos).filter(Boolean).slice(0,2).join(" · ") || "—"}</td><td class="border-t border-slate-100 px-3 py-2.5">{sourceText(row)}</td><td class="border-t border-slate-100 px-3 py-2.5 text-center"><span class={`inline-grid size-8 place-items-center rounded-full font-black ${score>=4?"bg-emerald-50 text-emerald-700":"bg-slate-100 text-slate-600"}`}>{score}</span></td></tr>; }}</For></tbody>
+        <table class="w-full min-w-[66rem] border-separate border-spacing-0 text-left text-xs text-slate-600">
+          <thead class="sticky top-0 z-10 bg-slate-50 text-[0.6875rem] font-extrabold uppercase tracking-[0.06em] text-slate-500"><tr><th class="w-12 px-3 py-2.5">Chọn</th><th class="px-3 py-2.5">Hán</th><th class="px-3 py-2.5">Pinyin</th><th class="px-3 py-2.5">Nghĩa / Hán Việt</th><th class="px-3 py-2.5">Từ loại</th><th class="px-3 py-2.5">Nguồn</th><th class="px-3 py-2.5 text-center">M</th></tr></thead>
+          <tbody><For each={visible()}>{(row) => { const score = deriveLexemeMastery(row.cardMastery); const selected = () => selectedSet().has(row.lexeme.id); return <tr class={`transition ${selected() ? "bg-blue-50/70" : "hover:bg-slate-50"}`}><td class="border-t border-slate-100 px-3 py-2.5"><input aria-label={`Chọn ${row.lexeme.hanzi}`} type="checkbox" class="size-5 accent-blue-600" checked={selected()} onChange={() => toggleSelected(row.lexeme.id)}/></td><td class="border-t border-slate-100 px-3 py-2.5"><A href={`/vocab/${row.lexeme.id}`} class="text-lg font-black text-slate-900 no-underline hover:text-blue-700">{row.lexeme.hanzi}</A></td><td class="border-t border-slate-100 px-3 py-2.5 font-bold text-blue-700">{row.readings.map((x) => x.pinyin).join(" / ")}</td><td class="border-t border-slate-100 px-3 py-2.5">{row.senses[0]?.meaningVi || row.senses[0]?.hanViet || "—"}</td><td class="border-t border-slate-100 px-3 py-2.5">{row.senses.map((s) => s.pos).filter(Boolean).slice(0,2).join(" · ") || "—"}</td><td class="border-t border-slate-100 px-3 py-2.5">{sourceText(row)}</td><td class="border-t border-slate-100 px-3 py-2.5 text-center"><span class={`inline-grid size-8 place-items-center rounded-full font-black ${score>=4?"bg-emerald-50 text-emerald-700":"bg-slate-100 text-slate-600"}`}>{score}</span></td></tr>; }}</For></tbody>
         </table>
       </section>
     </Show>
