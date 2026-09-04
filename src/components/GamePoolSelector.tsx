@@ -92,16 +92,16 @@ export function GamePoolSelector(props: Props) {
 
   const activeScope = createMemo(() => scopeOptions().find((item) => item.kind === props.value().kind) ?? scopeOptions()[0]!);
 
-  return <section class="rounded-2xl border border-slate-200 bg-slate-50/70 p-3">
-    <div class="flex flex-wrap items-center justify-between gap-2">
+  return <section class="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <div class="text-[0.6875rem] font-black uppercase tracking-[0.12em] text-slate-500">Bộ từ</div>
-        <p class="mt-0.5 text-[0.6875rem] leading-4 text-slate-500">Một phạm vi dùng chung cho Ôn và Game; đổi game không phải chọn lại.</p>
+        <div class="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Bộ từ</div>
+        <p class="mt-1 text-sm leading-5 text-slate-500">Một phạm vi dùng chung cho Ôn và Game; đổi game không phải chọn lại.</p>
       </div>
-      <span class={`shrink-0 rounded-full px-2.5 py-1 text-[0.6875rem] font-black ${!props.practiceOnly && gamePoolAffectsFsrs(props.value()) ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>{!props.practiceOnly && gamePoolAffectsFsrs(props.value()) ? "SRS" : "Practice"}</span>
+      <span class={`shrink-0 rounded-full px-3 py-1.5 text-xs font-black ${!props.practiceOnly && gamePoolAffectsFsrs(props.value()) ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-700"}`}>{!props.practiceOnly && gamePoolAffectsFsrs(props.value()) ? "SRS" : "Practice"}</span>
     </div>
 
-    <div class="mt-2.5 flex flex-wrap gap-1.5">
+    <div class="mt-3 flex flex-wrap gap-2">
       <For each={scopeOptions()}>{(item) => {
         const Icon = item.icon;
         const selected = () => props.value().kind === item.kind;
@@ -109,45 +109,46 @@ export function GamePoolSelector(props: Props) {
           type="button"
           aria-pressed={selected()}
           title={item.note}
-          class={`inline-flex min-h-10 items-center gap-1.5 rounded-xl border px-2.5 text-xs font-extrabold transition ${selected() ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"}`}
+          class={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 text-sm font-extrabold transition-colors ${selected() ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"}`}
           onClick={() => selectScope(item.kind)}
         >
-          <Icon size={15} strokeWidth={2.25}/><span>{item.title}</span>
+          <Icon size={17} strokeWidth={2.25}/><span>{item.title}</span>
         </button>;
       }}</For>
     </div>
 
-    <div class="mt-2 flex items-center gap-2 text-[0.6875rem] leading-4 text-slate-500">
-      <span class={`grid size-6 shrink-0 place-items-center rounded-lg ${tone().badge}`}><Dynamic component={activeScope().icon} size={13}/></span>
+    <div class="mt-3 flex items-center gap-2.5 text-sm leading-5 text-slate-500">
+      <span class={`grid size-7 shrink-0 place-items-center rounded-lg ${tone().badge}`}><Dynamic component={activeScope().icon} size={14}/></span>
       <span><b class="text-slate-700">{activeScope().title}:</b> {activeScope().note}</span>
     </div>
 
     <Show when={props.value().kind === "course"}>
-      <div class="mt-3 rounded-xl border border-slate-200 bg-white p-3">
-        <div class="text-[0.6875rem] font-black uppercase tracking-wider text-slate-500">Quyển</div>
-        <div class="mt-1.5 flex gap-1.5 overflow-x-auto pb-1">
-          <For each={meta().books}>{(book) => <button type="button" class={`min-h-9 shrink-0 rounded-full border px-3 text-[0.6875rem] font-extrabold transition ${props.value().bookId === book.id ? tone().active : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"}`} onClick={() => props.onChange({ kind: "course", bookId: book.id, lessonId: undefined, lessonIds: undefined, courseMode: props.value().courseMode ?? "smart" })}>{book.nameVi}</button>}</For>
+      <div class="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+        <div class="text-xs font-black uppercase tracking-wider text-slate-500">Quyển</div>
+        <div class="mt-2 flex gap-2 overflow-x-auto pb-1">
+          <For each={meta().books}>{(book) => <button type="button" class={`min-h-10 shrink-0 rounded-full border px-3.5 text-xs font-extrabold transition-colors ${props.value().bookId === book.id ? tone().active : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"}`} onClick={() => props.onChange({ kind: "course", bookId: book.id, lessonId: undefined, lessonIds: undefined, courseMode: props.value().courseMode ?? "smart" })}>{book.nameVi}</button>}</For>
         </div>
 
-        <div class="mt-3 flex flex-wrap items-center justify-between gap-2">
-          <div><div class="text-[0.6875rem] font-black uppercase tracking-wider text-slate-500">{selectedBook()?.lessonLabel ?? "Bài"}</div><div class="mt-0.5 text-[0.6875rem] text-slate-400">Chọn 1, 2 hoặc nhiều bài. Không chọn = cả quyển.</div></div>
-          <div class="flex gap-1.5"><button type="button" class="min-h-8 rounded-lg border border-slate-200 bg-white px-2.5 text-[0.6875rem] font-bold text-slate-600" onClick={selectAllLessons}>Tất cả</button><button type="button" class="min-h-8 rounded-lg border border-slate-200 bg-white px-2.5 text-[0.6875rem] font-bold text-slate-600" onClick={clearLessons}>Bỏ chọn</button></div>
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div><div class="text-xs font-black uppercase tracking-wider text-slate-500">{selectedBook()?.lessonLabel ?? "Bài"}</div><div class="mt-1 text-sm leading-5 text-slate-500">Chọn 1, 2 hoặc nhiều bài. Không chọn = cả quyển.</div></div>
+          <div class="flex gap-2"><button type="button" class="min-h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600" onClick={selectAllLessons}>Tất cả</button><button type="button" class="min-h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600" onClick={clearLessons}>Bỏ chọn</button></div>
         </div>
-        <div class="mt-2 grid max-h-52 grid-cols-2 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-3 lg:grid-cols-4">
+
+        <div class="mt-3 grid grid-cols-1 gap-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
           <For each={lessons()}>{(lesson) => {
             const selected = () => selectedLessonIds().has(lesson.id);
-            return <button type="button" aria-pressed={selected()} class={`min-h-11 rounded-xl border px-2.5 py-2 text-left text-[0.6875rem] transition ${selected() ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"}`} onClick={() => toggleLesson(lesson.id)}><span class="block font-black">{lesson.label} {lesson.index}</span><span class="mt-0.5 block truncate text-[0.625rem] opacity-70">{meta().lessonCounts[lesson.id] ?? 0} từ · {lesson.title}</span></button>;
+            return <button type="button" aria-pressed={selected()} class={`min-h-14 rounded-xl border px-3 py-2.5 text-left text-sm transition-colors ${selected() ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"}`} onClick={() => toggleLesson(lesson.id)}><span class="block font-black">{lesson.label} {lesson.index}</span><span class="mt-1 block truncate text-xs leading-4 opacity-75">{meta().lessonCounts[lesson.id] ?? 0} từ · {lesson.title}</span></button>;
           }}</For>
         </div>
 
-        <div class="mt-3 grid gap-1.5 sm:grid-cols-3">
-          <button type="button" class={`rounded-lg border px-2.5 py-2 text-left text-[0.6875rem] font-extrabold ${props.value().courseMode !== "learned" && props.value().courseMode !== "all" ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-700"}`} onClick={() => props.onChange({ ...props.value(), courseMode: "smart" })}>Đến hạn <span class="ml-1 text-emerald-700">SRS</span></button>
-          <button type="button" class={`rounded-lg border px-2.5 py-2 text-left text-[0.6875rem] font-extrabold ${props.value().courseMode === "learned" ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-700"}`} onClick={() => props.onChange({ ...props.value(), courseMode: "learned" })}>Random đã học</button>
-          <button type="button" class={`rounded-lg border px-2.5 py-2 text-left text-[0.6875rem] font-extrabold ${props.value().courseMode === "all" ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-700"}`} onClick={() => props.onChange({ ...props.value(), courseMode: "all" })}>Luyện toàn phạm vi</button>
+        <div class="mt-4 grid gap-2 sm:grid-cols-3">
+          <button type="button" class={`min-h-11 rounded-xl border px-3 py-2.5 text-left text-sm font-extrabold ${props.value().courseMode !== "learned" && props.value().courseMode !== "all" ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-700"}`} onClick={() => props.onChange({ ...props.value(), courseMode: "smart" })}>Đến hạn <span class="ml-1 text-emerald-700">SRS</span></button>
+          <button type="button" class={`min-h-11 rounded-xl border px-3 py-2.5 text-left text-sm font-extrabold ${props.value().courseMode === "learned" ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-700"}`} onClick={() => props.onChange({ ...props.value(), courseMode: "learned" })}>Random đã học</button>
+          <button type="button" class={`min-h-11 rounded-xl border px-3 py-2.5 text-left text-sm font-extrabold ${props.value().courseMode === "all" ? `${tone().active} ring-2` : "border-slate-200 bg-white text-slate-700"}`} onClick={() => props.onChange({ ...props.value(), courseMode: "all" })}>Luyện toàn phạm vi</button>
         </div>
       </div>
     </Show>
 
-    <p class="mt-2 text-[0.6875rem] leading-4 text-slate-500"><b class="text-slate-700">{!props.practiceOnly && gamePoolAffectsFsrs(props.value()) ? "Theo lịch ôn:" : "Luyện tự do:"}</b> {props.practiceOnly ? "Game này chỉ dùng để luyện/đánh giá và không thay đổi lịch FSRS." : poolLearningNote(props.value())}</p>
+    <p class="mt-3 text-sm leading-5 text-slate-500"><b class="text-slate-700">{!props.practiceOnly && gamePoolAffectsFsrs(props.value()) ? "Theo lịch ôn:" : "Luyện tự do:"}</b> {props.practiceOnly ? "Game này chỉ dùng để luyện/đánh giá và không thay đổi lịch FSRS." : poolLearningNote(props.value())}</p>
   </section>;
 }
