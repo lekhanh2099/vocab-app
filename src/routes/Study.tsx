@@ -195,49 +195,49 @@ export default function Study() {
   return <>
     <SectionHeader title="Ôn" meta={`${Math.min(index(), entries().length)} / ${entries().length}`} description="Chọn phạm vi trước, rồi chọn kiểu truy xuất. Scheduled review và extra practice được tách tuyệt đối." />
 
-    <div class="mt-3"><GamePoolSelector value={poolSelection} onChange={setPoolSelection} /></div>
-    <div class="mt-2 flex justify-end"><button type="button" class={buttonGhost} onClick={saveCurrentSet}>Lưu phạm vi này</button></div>
+    <div class="mt-4"><GamePoolSelector value={poolSelection} onChange={setPoolSelection} /></div>
+    <div class="mt-3 flex justify-end"><button type="button" class={buttonGhost} onClick={saveCurrentSet}>Lưu phạm vi này</button></div>
 
-    <section class={`${surface} mt-3 p-3 sm:p-4`}>
-      <div class="grid gap-4 lg:grid-cols-[auto_1fr] lg:items-start">
+    <section class={`${surface} mt-4 p-4 sm:p-5`}>
+      <div class="grid gap-5 lg:grid-cols-[auto_1fr] lg:items-start">
         <div>
-          <div class="text-[0.6875rem] font-black uppercase tracking-[0.12em] text-slate-500">Số lượng</div>
-          <div class="mt-2 flex flex-wrap gap-1.5">{([5,10,20,0] as StudySessionSize[]).map((value) => <button type="button" class={`min-h-10 rounded-xl border px-3 text-xs font-black ${sessionSize() === value ? "border-blue-300 bg-blue-50 text-blue-800 ring-2 ring-blue-100" : "border-slate-200 bg-white text-slate-600"}`} onClick={() => setSize(value)}>{value === 0 ? "Tất cả" : value}</button>)}</div>
+          <div class="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Số lượng</div>
+          <div class="mt-2.5 flex flex-wrap gap-2">{([5,10,20,0] as StudySessionSize[]).map((value) => <button type="button" class={`min-h-11 rounded-xl border px-3.5 text-sm font-black ${sessionSize() === value ? "border-blue-300 bg-blue-50 text-blue-800 ring-2 ring-blue-100" : "border-slate-200 bg-white text-slate-600"}`} onClick={() => setSize(value)}>{value === 0 ? "Tất cả" : value}</button>)}</div>
         </div>
         <div>
-          <div class="text-[0.6875rem] font-black uppercase tracking-[0.12em] text-slate-500">Kỹ năng trong Flashcard</div>
-          <div class="mt-2 flex flex-wrap gap-1.5">{skillOptions.map((item) => { const active = () => !poolSelection().skills?.length ? item.type !== "usage" : poolSelection().skills!.includes(item.type); return <button type="button" aria-pressed={active()} class={`min-h-10 rounded-xl border px-3 text-xs font-black ${active() ? "border-violet-300 bg-violet-50 text-violet-800" : "border-slate-200 bg-white text-slate-500"}`} onClick={() => toggleSkill(item.type)}>{item.label}</button>; })}</div>
-          <p class="mt-1.5 text-[0.6875rem] leading-4 text-slate-400">Mặc định: nhận mặt + nhớ ngược + âm. Usage chỉ có khi context đã verified.</p>
+          <div class="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Kỹ năng trong Flashcard</div>
+          <div class="mt-2.5 flex flex-wrap gap-2">{skillOptions.map((item) => { const active = () => !poolSelection().skills?.length ? item.type !== "usage" : poolSelection().skills!.includes(item.type); return <button type="button" aria-pressed={active()} class={`min-h-11 rounded-xl border px-3.5 text-sm font-black ${active() ? "border-violet-300 bg-violet-50 text-violet-800" : "border-slate-200 bg-white text-slate-500"}`} onClick={() => toggleSkill(item.type)}>{item.label}</button>; })}</div>
+          <p class="mt-2 text-sm leading-5 text-slate-500">Mặc định: nhận mặt + nhớ ngược + âm. Usage chỉ có khi context đã verified.</p>
         </div>
       </div>
     </section>
 
-    <section class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-      {modeLinks.map(([icon,title,note,href]) => <A href={href} class={`${surface} min-h-24 p-3.5 text-slate-900 no-underline transition hover:border-blue-200 hover:shadow-md`}><div class="text-lg">{icon}</div><div class="mt-1 text-sm font-black">{title}</div><div class="mt-1 text-[0.6875rem] leading-4 text-slate-500">{note}</div></A>)}
+    <section class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {modeLinks.map(([icon,title,note,href]) => <A href={href} class={`${surface} min-h-28 p-4 text-slate-900 no-underline transition-colors hover:border-blue-200 hover:shadow-md`}><div class="text-xl">{icon}</div><div class="mt-1.5 text-base font-black">{title}</div><div class="mt-1.5 text-sm leading-5 text-slate-500">{note}</div></A>)}
     </section>
 
     <Show when={savedSets().length}>
-      <section class={`${surface} mt-3 p-3`}>
-        <div class="text-[0.6875rem] font-black uppercase tracking-[0.12em] text-slate-500">Bộ đã lưu</div>
-        <div class="mt-2 flex gap-2 overflow-x-auto pb-1">{savedSets().map((set) => <div class="flex shrink-0 items-center rounded-xl border border-slate-200 bg-white"><button type="button" class="min-h-10 px-3 text-xs font-extrabold text-slate-700" onClick={() => setPoolSelection(set.selection)}>{set.name}</button><button type="button" class="min-h-10 border-l border-slate-100 px-2 text-xs text-slate-400" aria-label={`Xóa ${set.name}`} onClick={() => setSavedSets(deleteStudySet(set.id))}>×</button></div>)}</div>
+      <section class={`${surface} mt-4 p-4`}>
+        <div class="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Bộ đã lưu</div>
+        <div class="mt-2.5 flex gap-2 overflow-x-auto pb-1">{savedSets().map((set) => <div class="flex shrink-0 items-center rounded-xl border border-slate-200 bg-white"><button type="button" class="min-h-11 px-3.5 text-sm font-extrabold text-slate-700" onClick={() => setPoolSelection(set.selection)}>{set.name}</button><button type="button" class="min-h-11 border-l border-slate-100 px-2.5 text-sm text-slate-400" aria-label={`Xóa ${set.name}`} onClick={() => setSavedSets(deleteStudySet(set.id))}>×</button></div>)}</div>
       </section>
     </Show>
 
-    <Show when={!loading()} fallback={<div class={`${surface} mt-3 p-5 text-sm text-slate-500`}>Đang xây session…</div>}>
-      <Show when={index() < entries().length && view()} fallback={<div class="mt-3"><EmptyState title={entries().length ? "Hoàn tất session." : "Không có card phù hợp."} description={scheduledSession() ? "Không còn card đến hạn trong phạm vi này. Đổi sang Luyện toàn phạm vi nếu muốn extra practice." : "Thử đổi phạm vi, kỹ năng hoặc chọn Luyện toàn phạm vi."} /><button class={`${buttonPrimary} mt-3`} onClick={() => void loadSession()}>Làm lại {poolShortLabel(poolSelection())}</button></div>}>
-        <div class="mt-3 flex items-center gap-2"><div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200"><div class="h-full rounded-full bg-blue-600 transition-[width]" style={{ width: `${progress()}%` }} /></div><Badge>{index() + 1}/{entries().length}</Badge><Badge tone="blue">{view()?.entry.type}</Badge><Badge tone={view()?.entry.scheduled ? "green" : "neutral"}>{view()?.entry.scheduled ? "SRS" : "Practice"}</Badge></div>
+    <Show when={!loading()} fallback={<div class={`${surface} mt-4 p-5 text-sm text-slate-500`}>Đang xây session…</div>}>
+      <Show when={index() < entries().length && view()} fallback={<div class="mt-4"><EmptyState title={entries().length ? "Hoàn tất session." : "Không có card phù hợp."} description={scheduledSession() ? "Không còn card đến hạn trong phạm vi này. Đổi sang Luyện toàn phạm vi nếu muốn extra practice." : "Thử đổi phạm vi, kỹ năng hoặc chọn Luyện toàn phạm vi."} /><button class={`${buttonPrimary} mt-3`} onClick={() => void loadSession()}>Làm lại {poolShortLabel(poolSelection())}</button></div>}>
+        <div class="mt-4 flex items-center gap-2"><div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-200"><div class="h-full rounded-full bg-blue-600 transition-[width]" style={{ width: `${progress()}%` }} /></div><Badge>{index() + 1}/{entries().length}</Badge><Badge tone="blue">{view()?.entry.type}</Badge><Badge tone={view()?.entry.scheduled ? "green" : "neutral"}>{view()?.entry.scheduled ? "SRS" : "Practice"}</Badge></div>
 
-        <section class={`${surface} mt-3 grid min-h-[20rem] place-items-center p-5 text-center sm:min-h-[24rem] sm:p-8`}>
+        <section class={`${surface} mt-4 grid min-h-[20rem] place-items-center p-5 text-center sm:min-h-[24rem] sm:p-8`}>
           <div class="w-full max-w-3xl">
             <div class={`${view()?.entry.type === "recognition" ? "text-5xl sm:text-6xl" : "text-2xl leading-relaxed sm:text-3xl"} font-black tracking-[-0.035em] text-slate-950`}>{prompt()}</div>
-            <Show when={view()?.entry.type === "sound" && view()?.ttsSafe}><button class={`${buttonSecondary} mt-5`} onClick={speak}>🔊 Nghe lại <span class="ml-1 hidden text-[0.6875rem] sm:inline">R</span></button></Show>
-            <Show when={view()?.entry.type === "sound" && view() && !view()!.ttsSafe}><div class="mx-auto mt-4 max-w-xl rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">Từ đa âm: browser TTS không được dùng vì không đảm bảo đúng âm. Card này luyện pinyin → chữ Hán.</div></Show>
-            <Show when={revealed()}><div class="mt-6 border-t border-slate-100 pt-5"><div class="text-lg font-extrabold text-blue-700">{view()?.pinyin}</div><div class="mt-2 text-lg font-black text-slate-900">{view()?.hanzi} · {view()?.meaning}</div><Show when={view()?.hanViet}><div class="mt-1 text-xs text-slate-500">Hán Việt: {view()?.hanViet}</div></Show><Show when={view()?.entry.type === "usage" && view()?.context}><div class="mx-auto mt-4 max-w-2xl rounded-xl bg-slate-50 p-3 text-sm leading-6 text-slate-600">{view()?.context?.sentenceZh}</div></Show></div></Show>
+            <Show when={view()?.entry.type === "sound" && view()?.ttsSafe}><button class={`${buttonSecondary} mt-5`} onClick={speak}>🔊 Nghe lại <span class="ml-1 hidden text-xs sm:inline">R</span></button></Show>
+            <Show when={view()?.entry.type === "sound" && view() && !view()!.ttsSafe}><div class="mx-auto mt-4 max-w-xl rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-5 text-amber-900">Từ đa âm: browser TTS không được dùng vì không đảm bảo đúng âm. Card này luyện pinyin → chữ Hán.</div></Show>
+            <Show when={revealed()}><div class="mt-6 border-t border-slate-100 pt-5"><div class="text-xl font-extrabold text-blue-700">{view()?.pinyin}</div><div class="mt-2 text-xl font-black text-slate-900">{view()?.hanzi} · {view()?.meaning}</div><Show when={view()?.hanViet}><div class="mt-1.5 text-sm text-slate-500">Hán Việt: {view()?.hanViet}</div></Show><Show when={view()?.entry.type === "usage" && view()?.context}><div class="mx-auto mt-4 max-w-2xl rounded-xl bg-slate-50 p-3 text-base leading-7 text-slate-600">{view()?.context?.sentenceZh}</div></Show></div></Show>
           </div>
         </section>
 
-        <Show when={!revealed()}><button class={`${buttonPrimary} mt-3 w-full min-h-12`} onClick={() => setRevealed(true)}>Hiện đáp án <span class="ml-2 text-xs opacity-80">Space</span></button></Show>
-        <Show when={revealed()}><div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">{ratings.map((item) => <button type="button" disabled={committing()} class={`min-h-16 rounded-xl border px-3 text-sm font-black transition active:scale-[0.99] disabled:opacity-50 ${item.cls}`} onClick={() => void rate(item.rating)}><span class="block">{item.label}</span><small class="mt-1 block text-[0.6875rem] font-medium opacity-75">{item.key} · {item.hint}</small></button>)}</div></Show>
+        <Show when={!revealed()}><button class={`${buttonPrimary} mt-4 w-full min-h-12`} onClick={() => setRevealed(true)}>Hiện đáp án <span class="ml-2 text-xs opacity-80">Space</span></button></Show>
+        <Show when={revealed()}><div class="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4">{ratings.map((item) => <button type="button" disabled={committing()} class={`min-h-16 rounded-xl border px-3 text-base font-black transition-colors active:scale-[0.99] disabled:opacity-50 ${item.cls}`} onClick={() => void rate(item.rating)}><span class="block">{item.label}</span><small class="mt-1 block text-xs font-medium opacity-75">{item.key} · {item.hint}</small></button>)}</div></Show>
       </Show>
     </Show>
   </>;
