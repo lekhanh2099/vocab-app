@@ -19,17 +19,20 @@ export async function getVocabularyRows(): Promise<VocabularyRow[]> {
     const wordOccurrences = occurrenceMap.get(lexeme.id) ?? [];
     const wordCards = cardMap.get(lexeme.id) ?? [];
     const wordReadings = readingMap.get(lexeme.id) ?? [];
+    const wordSenses = senseMap.get(lexeme.id) ?? [];
     const cardMastery: Partial<Record<StudyCardType, number>> = {};
     for (const type of ["recognition", "recall", "sound", "usage"] as StudyCardType[]) {
       const typed = wordCards.filter((card) => card.type === type);
       if (!typed.length) continue;
-      const expected = type === "usage" ? 1 : Math.max(1, wordReadings.length);
+      // Core cards are sense-scoped. Two meanings sharing one pronunciation must not mask each other.
+      // Usage only exists for senses with a verified context, so evaluate the cards that actually exist.
+      const expected = type === "usage" ? typed.length : Math.max(1, wordSenses.length);
       cardMastery[type] = typed.length < expected ? 0 : Math.min(...typed.map(deriveCardMastery));
     }
     return {
       lexeme,
       readings: wordReadings,
-      senses: senseMap.get(lexeme.id) ?? [],
+      senses: wordSenses,
       occurrences: wordOccurrences,
       books: uniqueBy(wordOccurrences.map((item) => bookMap.get(item.bookId)).filter(Boolean) as Book[], (item) => item.id),
       lessons: uniqueBy(wordOccurrences.map((item) => lessonMap.get(item.lessonId)).filter(Boolean) as Lesson[], (item) => item.id),
