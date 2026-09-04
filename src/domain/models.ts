@@ -29,7 +29,7 @@ export interface GameSessionRecord { id: string; mode: GameMode; startedAt: stri
 export interface GameEventRecord { id?: number; sessionId: string; lexemeId: string; at: string; correct: boolean; responseMs?: number; }
 export interface AppSettingsRecord {
   id: "app"; newPerDay: number; reviewPerDay: number; requestRetention: number; audioRate: number; audioVoiceURI?: string; audioStrategy: "quality" | "offline"; audioPreferLocal?: boolean;
-  fallingToneMode: "plain" | "numbers"; reducedMotion: boolean;
+  fallingToneMode: "plain" | "numbers"; reducedMotion: boolean; newCardScope?: "active" | "global";
 }
 export interface DatasetMetaRecord { id: "dataset"; version: string; generatedAt: string; seededAt: string; }
 
