@@ -39,11 +39,12 @@ export function playableOptionsForSelection(selection: GamePoolSelection, limit:
     skills
   };
   const courseMode = selection.courseMode ?? "smart";
+  const lessonIds = selection.lessonIds?.length ? selection.lessonIds : selection.lessonId ? [selection.lessonId] : undefined;
   return {
     limit,
     bookId: selection.bookId,
-    lessonId: selection.lessonIds?.length === 1 ? selection.lessonIds[0] : selection.lessonId,
-    lessonIds: selection.lessonIds,
+    lessonId: lessonIds?.length === 1 ? lessonIds[0] : undefined,
+    lessonIds,
     poolMode: courseMode === "smart" ? "smart" : courseMode === "learned" ? "random-learned" : "all",
     allowNew: false,
     skills
