@@ -22,6 +22,7 @@ export const DEFAULT_SETTINGS: AppSettingsRecord = {
   newPerDay: 20,
   reviewPerDay: 80,
   requestRetention: 0.9,
+  newCardScope: "active",
   audioRate: 0.9,
   audioStrategy: "offline",
   fallingToneMode: "plain",
@@ -32,7 +33,14 @@ export async function seedDatabase(): Promise<void> {
   const current = await db.datasetMeta.get("dataset");
   const settings = await db.settings.get("app");
   if (!settings) await db.settings.put(DEFAULT_SETTINGS);
-  else if (settings.audioStrategy === undefined) await db.settings.put({ ...settings, audioStrategy: "offline", audioRate: settings.audioRate || 0.9 });
+  else if (settings.audioStrategy === undefined || settings.newCardScope === undefined) {
+    await db.settings.put({
+      ...settings,
+      audioStrategy: settings.audioStrategy ?? "offline",
+      audioRate: settings.audioRate || 0.9,
+      newCardScope: settings.newCardScope ?? "active"
+    });
+  }
   if (current?.version === canonical.version) return;
 
   const customContexts = await db.contexts.filter((item) => item.sourceType !== "book").toArray();
