@@ -14,6 +14,7 @@ export default function Settings() {
   const [newPerDay, setNewPerDay] = createSignal(20);
   const [reviewPerDay, setReviewPerDay] = createSignal(80);
   const [retention, setRetention] = createSignal(.9);
+  const [newCardScope, setNewCardScope] = createSignal<"active" | "global">("active");
   const [audioRate, setAudioRate] = createSignal(.9);
   const [voiceURI, setVoiceURI] = createSignal("");
   const [audioStrategy, setAudioStrategy] = createSignal<SpeechStrategy>("offline");
@@ -28,7 +29,7 @@ export default function Settings() {
 
   createEffect(() => {
     const s = current(); if (!s) return;
-    setNewPerDay(s.newPerDay); setReviewPerDay(s.reviewPerDay); setRetention(s.requestRetention); setAudioRate(s.audioRate ?? .9);
+    setNewPerDay(s.newPerDay); setReviewPerDay(s.reviewPerDay); setRetention(s.requestRetention); setNewCardScope(s.newCardScope ?? "active"); setAudioRate(s.audioRate ?? .9);
     setVoiceURI(s.audioVoiceURI ?? ""); setAudioStrategy(s.audioStrategy ?? "offline"); setToneMode(s.fallingToneMode); setReducedMotion(s.reducedMotion);
   });
 
@@ -41,7 +42,7 @@ export default function Settings() {
 
   const save = async () => {
     const value: AppSettingsRecord = {
-      id: "app", newPerDay: Math.max(0, Math.min(100, newPerDay())), reviewPerDay: Math.max(5, Math.min(300, reviewPerDay())), requestRetention: Math.max(.7, Math.min(.98, retention())),
+      id: "app", newPerDay: Math.max(0, Math.min(100, newPerDay())), reviewPerDay: Math.max(5, Math.min(300, reviewPerDay())), requestRetention: Math.max(.7, Math.min(.98, retention())), newCardScope: newCardScope(),
       audioRate: Math.max(.7, Math.min(1.12, audioRate())), audioVoiceURI: voiceURI() || undefined, audioStrategy: audioStrategy(), fallingToneMode: toneMode(), reducedMotion: reducedMotion()
     };
     await db.settings.put(value); invalidateSpeechPreferences(); setStatus("Đã lưu cài đặt.");
@@ -60,11 +61,12 @@ export default function Settings() {
   return <>
     <PageHero eyebrow="Settings" title="Ít tuỳ chọn nhưng phải đáng tin." description="Dataset tách khỏi progress. Audio mặc định dùng Mandarin voice của chính hệ điều hành để ổn định trên web, iPad và iPhone." actions={<button class={buttonPrimary} onClick={() => void save()}>Lưu cài đặt</button>} />
 
-    <SectionHeader title="Daily & FSRS" meta="request retention" />
-    <section class={`${surface} mt-3 grid gap-3 p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-4`}>
+    <SectionHeader title="Daily & FSRS" meta="request retention" description="Nguồn từ mới chỉ giới hạn card chưa được giới thiệu. Card cũ đến hạn vẫn luôn được ôn theo lịch FSRS toàn cục." />
+    <section class={`${surface} mt-3 grid gap-3 p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-5`}>
       <Field label="Từ mới / ngày"><input class={inputClass} type="number" min="0" max="100" value={newPerDay()} onInput={(e) => setNewPerDay(Number(e.currentTarget.value))}/></Field>
       <Field label="Review tối đa / ngày"><input class={inputClass} type="number" min="5" max="300" value={reviewPerDay()} onInput={(e) => setReviewPerDay(Number(e.currentTarget.value))}/></Field>
       <Field label="FSRS retention"><input class={inputClass} type="number" min="0.7" max="0.98" step="0.01" value={retention()} onInput={(e) => setRetention(Number(e.currentTarget.value))}/></Field>
+      <AppSelect label="Nguồn từ mới" value={newCardScope()} options={[{ value: "active", label: "Phạm vi đang học", description: "Bám quyển/bài đã chọn gần nhất" }, { value: "global", label: "Toàn bộ kho", description: "Lấy từ mới trên toàn dataset" }]} onChange={(value) => setNewCardScope(value === "global" ? "global" : "active")}/>
       <AppSelect label="Falling tone" value={toneMode()} options={[{ value: "plain", label: "qixian" }, { value: "numbers", label: "qi1xian4" }]} onChange={(value) => setToneMode(value as "plain" | "numbers")}/>
     </section>
 
