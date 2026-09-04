@@ -17,6 +17,8 @@ export interface PlayableRowsOptions {
   limit?: number;
   bookId?: string;
   lessonId?: string;
+  lessonIds?: string[];
+  lexemeIds?: string[];
   poolMode?: "smart" | "weak" | "favorites" | "random-learned" | "all";
   allowNew?: boolean;
   skills?: StudyCardType[];
@@ -29,18 +31,22 @@ export async function getPlayableRows(input: number | PlayableRowsOptions = 60):
   const limit = options.limit ?? 60;
   let rows = expandRowsByReading((await getVocabularyRows()).filter((row) => row.senses.length > 0 && row.readings.length > 0));
 
-  if (options.bookId || options.lessonId) {
+  const allowedLexemeIds = options.lexemeIds?.length ? new Set(options.lexemeIds) : undefined;
+  if (allowedLexemeIds) rows = rows.filter((row) => allowedLexemeIds.has(row.lexeme.id));
+
+  const lessonIds = options.lessonIds?.length ? new Set(options.lessonIds) : options.lessonId ? new Set([options.lessonId]) : undefined;
+  if (options.bookId || lessonIds) {
     rows = rows.map((row) => {
-      const occurrences = row.occurrences.filter((item) => (!options.bookId || item.bookId === options.bookId) && (!options.lessonId || item.lessonId === options.lessonId));
+      const occurrences = row.occurrences.filter((item) => (!options.bookId || item.bookId === options.bookId) && (!lessonIds || lessonIds.has(item.lessonId)));
       const senseIds = new Set(occurrences.map((item) => item.senseId));
-      const lessonIds = new Set(occurrences.map((item) => item.lessonId));
+      const scopedLessonIds = new Set(occurrences.map((item) => item.lessonId));
       const bookIds = new Set(occurrences.map((item) => item.bookId));
       return {
         ...row,
         occurrences,
         senses: row.senses.filter((sense) => senseIds.has(sense.id)),
         books: row.books.filter((book) => bookIds.has(book.id)),
-        lessons: row.lessons.filter((lesson) => lessonIds.has(lesson.id))
+        lessons: row.lessons.filter((lesson) => scopedLessonIds.has(lesson.id))
       };
     }).filter((row) => row.senses.length > 0 && row.occurrences.length > 0);
   }
@@ -76,14 +82,14 @@ export async function getPlayableRows(input: number | PlayableRowsOptions = 60):
     if (!sense) return row;
     const occurrences = row.occurrences.filter((item) => item.senseId === sense.id);
     const bookIds = new Set(occurrences.map((item) => item.bookId));
-    const lessonIds = new Set(occurrences.map((item) => item.lessonId));
+    const rowLessonIds = new Set(occurrences.map((item) => item.lessonId));
     return {
       ...row,
       targetSenseId: sense.id,
       senses: [sense],
       occurrences: occurrences.length ? occurrences : row.occurrences,
       books: occurrences.length ? row.books.filter((book) => bookIds.has(book.id)) : row.books,
-      lessons: occurrences.length ? row.lessons.filter((lesson) => lessonIds.has(lesson.id)) : row.lessons
+      lessons: occurrences.length ? row.lessons.filter((lesson) => rowLessonIds.has(lesson.id)) : row.lessons
     };
   };
   const isIntroduced = (row: VocabularyRow) => Boolean(eligibleSense(row, practiceSenseIds));
@@ -101,7 +107,7 @@ export async function getPlayableRows(input: number | PlayableRowsOptions = 60):
     ? shuffle(rows.filter((row) => !isIntroduced(row)).map((row) => focusSense(row))).slice(0, remainingNew)
     : [];
   // Smart game sessions are scheduler-safe: ONLY the requested skill(s) that are actually due.
-  // Weak / Random / Favorites / full-course are deliberate extra practice and never advance FSRS.
+  // Weak / Random / Favorites / full-course/manual are deliberate extra practice and never advance FSRS.
   return [...due, ...fresh].slice(0, limit);
 }
 
