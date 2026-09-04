@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const root = process.cwd();
 const sourceRoots = ["src", "tests"];
 let files = [];
 const walk = (dir) => {
@@ -33,11 +32,20 @@ for (const file of files) {
 }
 
 const vocab = fs.readFileSync("src/routes/Vocabulary.tsx", "utf8");
+const study = fs.readFileSync("src/routes/Study.tsx", "utf8");
+const pool = fs.readFileSync("src/features/study/pool.ts", "utf8");
+const sessionBuilder = fs.readFileSync("src/features/review/sessionBuilder.ts", "utf8");
 const falling = fs.readFileSync("src/games/phaser/createFallingGame.ts", "utf8");
 const games = fs.readFileSync("src/routes/Games.tsx", "utf8");
 const checks = [
   [!vocab.includes("createVirtualizer"), "Vocabulary must not use the removed virtualizer"],
   [vocab.includes("IntersectionObserver"), "Vocabulary incremental loader missing"],
+  [vocab.includes("setManualStudyPool") && vocab.includes("Ôn kết quả lọc"), "Vocabulary → study bulk flow missing"],
+  [study.includes("recordStudyPractice") && study.includes("entry.scheduled"), "Study scheduled/practice split missing"],
+  [study.includes("GamePoolSelector") && study.includes("modeLinks"), "Study shared scope / retrieval modes missing"],
+  [pool.includes("lessonIds?: string[]") && pool.includes('"manual"'), "Shared multi-lesson/manual study pool missing"],
+  [sessionBuilder.includes("Scheduled study entries must use reviewStudyCard"), "Study practice FSRS guard missing"],
+  [fs.existsSync("QUALITY_AUDIT.md"), "QUALITY_AUDIT.md missing"],
   [falling.includes("rampPerMinute"), "Falling continuous ramp missing"],
   [falling.includes("maybeAwardPowerUp"), "Falling power-up system missing"],
   [falling.includes("shield") && falling.includes("slowUntil"), "Falling power-up effects missing"],
@@ -52,6 +60,8 @@ if (failed.length) {
 }
 console.log(`✓ static release audit: ${files.length} TS/TSX files`);
 console.log(`✓ relative imports: ${imports}, missing 0`);
-console.log("✓ Vocabulary incremental loader");
+console.log("✓ Vocabulary incremental loader + study handoff");
+console.log("✓ Study scheduled/practice FSRS split + shared scope");
+console.log("✓ Multi-lesson/manual pools + audit checklist");
 console.log("✓ Falling continuous ramp + power-ups");
 console.log("✓ Daily mission board");
