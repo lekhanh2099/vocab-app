@@ -1,9 +1,8 @@
 import { A, useNavigate } from "@solidjs/router";
 import { ChevronLeft, ChevronRight, ExternalLink, Star, Volume2, X } from "lucide-solid";
-import { createEffect, createSignal, onCleanup, Show } from "solid-js";
+import { createEffect, createResource, createSignal, onCleanup, Show } from "solid-js";
 import { SkillBars } from "./SkillBars";
 import { Badge, buttonGhost, buttonPrimary, buttonSecondary } from "./ui";
-import { createDexieQuery } from "../db/liveQuery";
 import { getVocabularyRow, toggleFavorite } from "../db/repositories";
 import { speakChineseApp } from "../features/audio/appSpeech";
 
@@ -21,10 +20,10 @@ interface Props {
 export function VocabularyQuickPanel(props: Props) {
   const navigate = useNavigate();
   const [refresh, setRefresh] = createSignal(0);
-  const row = createDexieQuery(async () => {
-    refresh();
-    return props.lexemeId ? getVocabularyRow(props.lexemeId) : undefined;
-  }, undefined);
+  const [row] = createResource(
+    () => [props.lexemeId, refresh()] as const,
+    async ([lexemeId]) => lexemeId ? getVocabularyRow(lexemeId) : undefined
+  );
 
   createEffect(() => {
     if (!props.lexemeId) return;
